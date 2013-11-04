@@ -1,0 +1,695 @@
+\documentclass{article}
+
+\makeatletter
+\renewcommand\@biblabel[1]{}
+\makeatother
+
+% \VignetteIndexEntry{strum-introduction}
+% \VignettePackage{strum}
+
+\usepackage{array}
+
+\title{Introduction to \textbf{STRU}ctural \textbf{M}odeling of Latent Variables for General Pedigree}
+\author{Yeunjoo E. Song, Nathan J. Morris}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+%-------------------------------------------
+\section{Getting started}
+\label{sec:intro}
+%-------------------------------------------
+
+The \textbf{strum} package implements the framework for structural equation models for general pedigrees described in Morris et al. (2010).  It includes both fitting and simulation of a broad range of latent measurement models and structural equation models with covariates, allowing for a wide variety of models including latent growth curve models.  It can handle multilevel models, polygenic random effects and linkage random effects.  Traditional structural equation models and confirmatory factor analysis may also be performed.  The framework implemented now can only handle quantitative variables.
+
+\bigskip
+Assuming that you have the \textbf{strum} package installed, you first need to load it:
+
+<<<label=r1, eval=TRUE>>=
+library(strum)
+set.seed(1)
+@
+
+\noindent Note that all packages that \textbf{strum} depends on will be loaded as well.  Once it is loaded, now you can start a \textbf{strum} analysis.
+
+%-------------------------------------------
+\section{strum Analysis}
+\label{sec:anal}
+%-------------------------------------------
+
+A \textbf{strum} analysis is performed by calling the main function \textit{strum()} which requires two arguments, an object of \textbf{strumModel} class and an object of \textbf{strumData} class.  The \textbf{strumModel} is an S4 class that represents the trait model for your data.  The \textbf{strumData} is an S4 class that contains the input data.  The following illustrates the typical steps for a strum analysis.
+
+\begin{enumerate}
+\item Construct a strumModel by \textit{createStrumModel()} function.
+\item Prepare data using \textit{createStrumData()} function.
+\item Run analysis by the function call \textit{strum()}.
+\end{enumerate}
+
+%--------------------------------------------
+\subsection{strumModel}
+%--------------------------------------------
+
+An object of \textbf{strumModel} is constructed by \textit{createStrumModel()} function.  The \textit{formulas} argument for this function defines the relationship among the variables.  The measurement equations are specified by the ``=\( \sim \)'' operator.  The ``\( \sim \)'' operator specifies the structural equations in the model.  The ``='' operator specifies the constraints in the model, i.e., fixing a model parameter - a variance, covariance, or coefficient.  Please refer to the reference manual for more detailed decription of the syntax for the model formulas and other optional arguments for this function.
+
+\bigskip
+\noindent Following are some acronyms used below:
+
+\smallskip
+SEM: Structural Equation Model
+
+CFA: Confirmatory Factor Analysis
+
+ACE: Additive polygenic(A), common environmental(C), random error(E)
+
+MIMIC: Multiple Indicators Multiple Causes
+
+\bigskip
+Here are some examples of `\textit{formulas}' for different types of analysis with the corresponding model diagrams.  Following standard conventions, observed variables are represented as squares and latent variables are represented as ovals.  The arrows represent linear relations between variables.  There are four possible error terms; additive genetic linkage (a), polygenic (p), shared environmental (c) and independent environmental (e) variance components.  They are represented as non-filled small circles.  Note that the subscripts for error terms and coefficient parameters are omitted.
+
+\begin{itemize}
+\item Genetic association analysis model with a latent trait (similar to MIMIC model)
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \center
+    \includegraphics[width=0.8\textwidth, height=40mm]{./figures/fig_association.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{4.9cm}
+    \texttt{formulas = ` \newline
+            L1 =\( \sim \) P1 + P2 + P3 + <e> \newline
+            L1 \( \sim \) SNP + <p,e> \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\newpage
+
+\begin{itemize}
+\item Genetic linkage analysis model with a latent trait
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \center
+    \includegraphics[width=0.6\textwidth, height=40mm]{./figures/fig_linkage.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            L1 =\( \sim \) P1 + P2 + P3 + <e> \newline
+            L1 \( \sim \) <a,p,e> \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\begin{itemize}
+\item SEM with latent variables and polygenic effect
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \includegraphics[width=62mm, height=40mm]{./figures/fig_model0.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            bp =\( \sim \) SBP + DBP \newline
+            anger =\( \sim \) A1 + A2 \newline
+            stress =\( \sim \) S1 + S2 \newline
+            bp \( \sim \) anger + stress \newline
+            stress \( \sim \) anger + rs6040343 \newline
+            var(stress) = .1 \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\begin{itemize}
+\item CFA with a pleiotropic genetic effect influenced by a SNP
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \includegraphics[width=1\textwidth, height=50mm]{./figures/fig_model1.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            z1 =\( \sim \) X1 + X2 + X3 + <e>\newline
+            z2 =\( \sim \) X4 + X5 + X6 + <e> \newline
+            g1 \( \sim \) rs6040343 + <p> \newline
+            z1 \( \sim \) g1 + <e> \newline
+            z2 \( \sim \) g1 + <e> \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\newpage
+
+\begin{itemize}
+\item Multivariate test for genetic association
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \center
+    \includegraphics[width=0.8\textwidth, height=45mm]{./figures/fig_model2.png}
+    \bigskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            X1 \( \sim \) rs6040343 \newline
+            X2 \( \sim \) rs6040343 \newline
+            cov(X1,X2) = NA \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\begin{itemize}
+\item CFA with polygenic effect
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \includegraphics[width=62mm, height=42mm]{./figures/fig_model3.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            z1 =\( \sim \) X1 + X2 + X3 \newline
+            z2 =\( \sim \) X4 + X5 + X6 \newline
+            cov(z1,z2,p) = NA \newline
+            cov(z1,z2,e) = NA \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\begin{itemize}
+\item SEM with latent variables with polygenic effects
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \includegraphics[width=1\textwidth, height=40mm]{./figures/fig_model4.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            z1 =\( \sim \) X1 + X2 + X3 + <e> \newline
+            z2 =\( \sim \) X4 + X5 + X6 + <e> \newline
+            z1 \( \sim \) z2 \newline
+            cov(X1,X2,e) = NA \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\newpage
+
+\begin{itemize}
+\item CFA with latent variables with polygenic effects
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \includegraphics[width=62mm, height=35mm]{./figures/fig_model5.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            z1 =\( \sim \) X1 + X2 + X3 + <e> \newline
+            z2 =\( \sim \) X4 + X5 + X6 + <e> \newline
+            X7 \( \sim \) z2 \newline
+            cov(z1,z2) = NA \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\begin{itemize}
+\item Multiple SNP / Latent Genotype model
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \center
+    \includegraphics[width=0.8\textwidth, height=43mm]{./figures/fig_model6.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            z1 =\( \sim \) RS1 + RS2 + RS3 + y \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\begin{itemize}
+\item Mendelian randomization model
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \smallskip
+    \includegraphics[width=1\textwidth, height=30mm]{./figures/fig_model7.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            X2 \( \sim \) X1 \newline
+            X1 \( \sim \) RS \newline
+            cov(X1,X2) = NA \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\begin{itemize}
+\item ACE model - <p, c, e> in strum Model
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{4.9cm} | }
+  \hline
+  \begin{minipage}{.51\textwidth}
+    \bigskip
+    \center
+    \includegraphics[width=0.4\textwidth, height=21mm]{./figures/fig_model8.png}
+    \bigskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            X1 \( \sim \) <p,c,e> \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\begin{itemize}
+\item Latent growth curve model
+\end{itemize}
+
+\noindent
+\begin{tabular}{ | c | m{5.5cm} | }
+  \hline
+  \begin{minipage}{.45\textwidth}
+    \bigskip
+    \includegraphics[width=1\textwidth, height=45mm]{./figures/fig_model9.png}
+    \smallskip
+  \end{minipage}
+  & 
+  %\begin{minipage}{5cm}
+    \texttt{formulas = ` \newline
+            S =\( \sim \) 1*X2 + 2*X3 + <e> \newline
+            I =\( \sim \) 1*X1 + 1*X2 + 1*X3 + <e> \newline
+            S \( \sim \) RS \newline
+            '}
+  %\end{minipage}
+  \\
+  \hline
+\end{tabular}
+
+\bigskip
+The following example shows how to construct \textbf{strumModel} object for the first model above.
+
+<<label=r2, eval=TRUE>>=
+formulas = 
+  'L1 =~ P1 + P2 + P3 + <e>
+   L1 ~ aSNP + <p,e>
+  '
+myModel = createStrumModel(formulas = formulas)
+myModel
+@
+
+\newpage
+
+%--------------------------------------------
+\subsection{strumData}
+%--------------------------------------------
+
+An object of \textbf{strumData} is constructed by \textit{createStrumData()} function.  The value of \textit{inData} argument for this function has to be a data.frame, and the allowed values for \textit{dType} argument is either ``\textit{Pedigree}'' or ``\textit{RawData}''.
+
+\bigskip
+\begin{itemize}
+\item Pedigree data
+
+\bigskip
+If \textit{dType} = ``\textit{Pedigree}'', the data must be a data.frame with 4 required id fields - family, id, father, mother.  For founders, ``0'' needs to be used to indicate the missing parents.   
+
+\bigskip
+A typical space-delimited pedigree file will look like following.
+\texttt{
+\smallskip \newline family id father mother sex X1   X2   ...
+\newline 1      1  0      0      1   0.24 0.36 ...
+\newline 1      2  0      0      2   1.26 3.25 ...
+\newline 1      3  1      2      1   0.37 0.48 ...
+\newline 1      4  1      2      1   3.26 2.67 ...
+\newline 2      1  0      0      1   2.25 1.87 ...
+\newline 2      2  0      0      2   0.48 1.68 ...
+\newline 2      3  1      2      1   1.94 0.62 ...
+\newline 2      4  1      2      2   3.17 2.10 ...
+}
+
+\bigskip
+A typical comma-delimited pedigree file will look like following.
+\texttt{
+\smallskip \newline family,id,father,mother,sex,X1,X2,...
+\newline 1,1,0,0,1,0.24,0.36,...
+\newline 1,2,0,0,2,1.26,3.25,...
+\newline 1,3,1,2,1,0.37,0.48,...
+\newline 1,4,1,2,1,3.26,2.67,...
+\newline 2,1,0,0,1,2.25,1.87,...
+\newline 2,2,0,0,2,0.48,1.68,...
+\newline 2,3,1,2,1,1.94,0.62,...
+\newline 2,4,1,2,2,3.17,2.10,...
+}
+
+\bigskip
+The following example show how to construct \textbf{strumData} object from an example pedigree file.  Note that the first 4 column names are changed to the 4 required id fields - family, id, father, mother.
+ 
+<<label=r3, eval=TRUE>>=
+inPed = system.file("extdata/example_ped.csv", package = "strum")
+dfPed = read.csv(inPed, header=T)[,c(1:6,8:10,17)]
+names(dfPed)[1:4] = c("family","id", "father","mother")
+myPedData = createStrumData(dfPed, "Pedigree")
+myPedData
+@
+\end{itemize}
+
+\bigskip
+\begin{itemize}
+\item Pedigree data with IBD info
+
+\bigskip
+When your analysis model includes the additive genetic variance component (a), the ibd information for the family data has to be imported by specifying the name of ibd file into \textit{ibdFileName} argument.  Currently, the ibd file generated by the program GENIBD in S.A.G.E. package is supported.
+
+<<label=r4, eval=TRUE>>=
+iName = system.file("extdata/GENIBD.chr1Ped.ibd", package = "strum")
+myPedDataIBD = createStrumData(dfPed, "Pedigree", ibdFileName=iName)
+myPedDataIBD
+@
+
+Note that now, the new \textbf{strumData} object, \texttt{myPedDataIBD}, includes the IBD information.
+\end{itemize}
+
+\bigskip
+\begin{itemize}
+\item Raw data
+
+\bigskip
+For ``\textit{RawData}'' type, 4 id fields are not required.  The program automatically creates the dummy id fields if any of them are not present in the input file by making each individual as a family of own.  Note that the last four columns are automatically included in the following example.
+
+<<label=r5, eval=TRUE>>=
+inRaw = system.file("extdata/example_raw.csv", package = "strum")
+dfRaw = read.csv(inRaw, header=T)
+head(dfRaw)
+myRawData = createStrumData(dfRaw, "RawData")
+myRawData
+@
+\end{itemize}
+
+\newpage
+
+%--------------------------------------------
+\subsection{Run analysis}
+%--------------------------------------------
+
+By the function call \textit{strum()} with two previous objects (\textbf{strumModel} and \textbf{strumData}) as the arguments, you can run a strum  analysis.  This is an example with the \texttt{myModel} object and the \texttt{myPedData} object.
+
+<<label=r6, eval=TRUE>>=
+myFitResult = strum(myModel, myPedData)
+@
+
+The \textit{strum()} function has an optional third argument, \textit{ibdmarkers}.  This argument is to specify the names of the IBD markers when you want to analyze a subset of IBD markers instead of all markers by default.  As stated previously, this is the case for the analysis models including the additive genetic variance component (a) and the data including the ibd information.
+
+<<label=r7, eval=FALSE>>=
+mNames = c("chr1marker1", "chr1marker2")
+myLinkResult = strum(myLinkModel, myPedIBD, ibdMarkers=mNames)
+@
+
+\bigskip
+As a result of \textit{strum()} run, an object (or a list of objects in case of analysis with multiple IBD markers) of \textbf{strumFittedModel} class, which contains the model description and two result tables. The first table contains the fitted parameter values with standard errors, confidence intervals, and p-values. The second table contains the information on the model fit from four different measures, with the degrees of freedom and p-values.
+\begin{enumerate}
+\item the un-adjusted $ \chi^2 $ index of fit
+\item the mean scaled $ \chi^2 $ index of fit
+\item the mean and variance scaled $ \chi^2 $ index of fit
+\item the exact p-value from simulation
+\end{enumerate}
+
+\newpage
+%------------------------------------
+\section{Simulation}
+\label{sec:simul}
+%-------------------------------------
+
+This package provides the functions to simulate both trait and marker data.  Given a model you want to test, it simulates the data according to the model specification.  The following illustrates the typical steps for a strum simulation.
+
+\begin{enumerate}
+\item Construct a simulation model.
+\begin{itemize}
+\item Import Hapmap data by \textit{importHapmapData()} function.
+\item Construct a strumMarker by \textit{createStrumMarker()} function.
+\item Construct a strumSimModel by \textit{createSimModel()} function.
+\end{itemize}
+\item Simulate data using \textit{simulateStrumData()} function.
+\item Run analysis on the simulated data by the function call \textit{strum()}.
+\end{enumerate}
+
+%--------------------------------------------
+\subsection{Simulation model}
+%--------------------------------------------
+
+An object of \textbf{strumSimModel} is constructed by \textit{createSimModel()} function.  The syntax of the \textit{formulas} argument for this function is similar to the one for the \textit{createStrumModel()} function.  However, for the simulation, you include the coefficients for the model parameters, and there are two additional optional arguments, ``\textit{tMissingRate}'' and ``\textit{markerInfo}''.
+
+\bigskip
+The value for ``\textit{tMissingRate}'' is a numeric vector to define the missing rate(s) of the simulated trait(s) in the model.  The length of vector needs to be equal to the number of observed traits in the model or 1 if one common missing rate is applied to all traits.  A value has to be given for the \textit{markerInfo} argument when a marker is included in the simulation model.  This must be an object of \textbf{strumMarker} class with a data.frame containing hapmap data, which you can import from Hapmap project website. 
+
+\bigskip
+\begin{itemize}
+\item Import Hapmap data
+
+\bigskip
+To construct a data.frame containing hapmap data, the function \textit{importHapmapData()} comes in handy.  This function imports Hapmap3 Phased data from the wabsite for the specified  chromosome number.  By default, `CEU' population is used when the population of your choice is not specified.  In the following example, the chromosome 20 of `CEU' population is imported.
+
+<<label=r8, eval=FALSE>>=
+hap20 = importHapmapData(20)
+@
+\end{itemize}
+
+\bigskip
+\begin{itemize}
+\item Construct strumMarker
+
+\bigskip
+An object of \textbf{strumMarker} is constructed by \textit{createStrumMarker()} function.  The value of ``\textit{hapMapData}'' argument for this function must be a data.frame containing hapmap data with three required information fields - rsID, chr, and phys\_position.  In the following example, every 10th SNPs from the imported hapmap data above are used to construct a \textbf{strumMarker} object.
+
+<<label=r9, eval=TRUE>>=
+#hap20snp10 = hap20[(1:10)*10,]
+#save(hap20snp10,file="hap20snp10.Rdata")
+#using locally saved copy
+inHap = system.file("extdata/hap20snp10.Rdata", package = "strum")
+load(file=inHap)
+snpStrumMarker = createStrumMarker(hapMapData=hap20snp10)
+#snpStrumMarker
+@
+\end{itemize}
+
+\bigskip
+\begin{itemize}
+\item Construct strumSimModel
+
+\bigskip
+Now, you can construct an object of \textbf{strumSimModel} by calling \textit{createSimModel()} function.  The following example shows a simulation model using the \texttt{snpStrumMarker} and a common missing rate of 0.1 for the simulated traits.
+
+<<label=r10, eval=TRUE>>=
+simform = 
+  'L1 =~ X1 + 2*X2 + 0.5*X3 + <e>
+   L1 ~ aSNP + <p,e>
+  '
+mySimModel = createSimModel(formulas = simform,
+                            tMissingRate = c(0.1),
+                            markerInfo = snpStrumMarker)
+#mySimModel
+@
+\end{itemize}
+
+\newpage
+%--------------------------------------------
+\subsection{Simulate data}
+%--------------------------------------------
+
+Given an object of \textbf{strumSimModel}, the data is simulated by the function \textit{simulateStrumData()} according to the specified model.  There are two optional arguments, ``\textit{inData}'' and ``\textit{N}''.  Note that either ``\textit{inData}'' or ``\textit{N}'', or both must be specified.
+
+\bigskip
+An object of \textbf{strumData} or a data.frame contaning that input data must be given as the value for ``\textit{inData}'' argument when a specific format of the input data (either family structures or individuals) is desired.  This value is also required when the simulation model contains covariate(s), since covariates are not simulated.  When a particular size of the simulated data is desired, a positive number needs to given as the value for ``\textit{N}'' argument.  
+
+\bigskip
+The following example shows the case when the value for ``\textit{inData}'' argument is specified using the \texttt{myPedData} from above.  Note that all simulated traits (P1, P2, p3) will have the missing rate of 0.1.
+
+<<label=r11, eval=TRUE>>=
+mySimData = simulateStrumData(mySimModel, myPedData)
+#mySimData
+@
+
+\bigskip
+This is another example when the value for ``\textit{N}'' argument is specified, with a simple model without any marker variables.    
+
+<<label=r12, eval=TRUE>>=
+simform1 = 'z1 =~ X1 + 0.8*X2 + 0.5*X3 + y'
+mySimModel1 = createSimModel(formulas = simform1,
+                             defaultError='<e>')
+#mySimModel1
+mySimData1 = simulateStrumData(mySimModel1, N=150)
+#mySimData1
+@
+
+%--------------------------------------------
+\subsection{Run analysis with simulated data}
+%--------------------------------------------
+
+As for the strum analysis, you can run a strum analysis by the function call \textit{strum()}  with simulate data.  This is an example with the \texttt{mySimData1} data.
+
+<<label=r13, eval=FALSE>>=
+testform = 'z1 =~ X1 + X2 + X3 + y'
+myTestModel = createStrumModel(formulas = testform, defaultError='<e>')
+mySimResult = strum(myTestModel, mySimData1)
+#mySimResult
+@
+
+\newpage
+%------------------------------------
+\section{Ascertainment}
+\label{sec:ascer}
+%-------------------------------------
+
+This section explains how to specify the ascertainment of the data, a feature commonly found in family-based studies.  That is, pedigrees are selected for inclusion in a study based upon some criteria for the observed traits.  Generally, pedigrees are collected by first identifying an individual who is affected or has an extreme phenotype. Such an individual, who causes the pedigree to be sampled, is known as a proband.
+
+\bigskip
+There is an optional argument, ``\textit{ascertainment}'', for both ``\textit{createStrumModel()}'' and ``\textit{createSimModel()}'' functions.  Though the names are the same for both functions, the values are different.
+
+\begin{enumerate}
+
+\item The value for \textit{createStrumModel()}
+
+Charactor stating the name of the column in data file that contains the indicator variable (1, 0) designating the probands of the pedigrees.
+
+\bigskip
+Suppose that ``proband'' field in the ``example.ped'' file is a (1, 0) indicator of proband status for this family data.  Then, in the association analysis model above, you would specify the \textit{ascertainment} argument value as ``proband'' for \textit{createStrumModel()} call as below. 
+
+<<label=r14, eval=TRUE>>=
+myAStrumModel = createStrumModel(formulas = formulas,
+                                 ascertainment="proband")
+myAStrumModel
+@
+
+Note that now, the description of the model informs that this model includes the ascertainment.
+
+\item The value for \textit{createSimModel()}
+
+Function stating the ascertainment criteria of the data.  The return value of the function is composed of two components for each pedigree, allowing either one of components or both components to be returned as a list. The first component is a TRUE/FALSE value indicating the ascertainment status of the pedigree. The second component is a vector of TRUE/FALSE stating the proband status of each member of the pedigree  Please refer to the reference manual for details.
+
+\bigskip
+This is an example when the data is simulated with the ascertainment using the 'disease' field in \texttt{myPedData} above.
+
+<<label=r15, eval=TRUE>>=
+aFunction = function(thisFam)
+            {
+              aff = (thisFam$disease == 1)
+              ascertained = any(aff)
+              proband = rep(FALSE, nrow(thisFam))
+              if(ascertained)
+                pPos = which.min(thisFam$disease == 1)
+                proband[pPos] = TRUE
+              return(list(aStatus=ascertained, pStatus=proband))
+            }
+
+myASimModel = createSimModel(formulas = simform,
+                             markerInfo = snpStrumMarker,
+                             ascertainment = aFunction)
+#myASimModel
+myASimData = simulateStrumData(myASimModel, myPedData)
+#myASimData
+@
+
+\end{enumerate}
+
+
+
+\newpage
+%------------------------------------
+\section{SessionInfo}
+%-------------------------------------
+
+<<sessionInfo>>=
+sessionInfo();
+@ 
+
+\begin{thebibliography}{}
+
+\bibitem{Morris2010}
+Morris, N.J., Elston, R.C., \& Stein, C.M. (2010).
+\newblock A framework for structural equation models in general pedigrees.
+\newblock \emph{Human heredity}, 70, 278--286.
+
+\end{thebibliography}
+
+\end{document}

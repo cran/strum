@@ -1,0 +1,25 @@
+useDynLib(strum)
+exportPattern("^[[:alpha:]]+")
+
+import('pedigree','methods')
+importFrom(MASS, ginv)
+
+export(
+    "createStrumData",
+    "createStrumMarker",
+    "createStrumModel",
+    "createSimModel",
+    "importHapmapData",
+    "simulateStrumData",
+    "strum"
+)
+
+exportClasses(
+  "strumVirtualModel",
+  "strumSimModel",
+  "strumModel",
+  "strumFittedModel",
+  "strumMarker",
+  "strumIBD",
+  "strumData"
+  )

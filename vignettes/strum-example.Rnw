@@ -1,0 +1,247 @@
+\documentclass{article}
+
+\makeatletter
+\renewcommand\@biblabel[1]{}
+\makeatother
+
+% \VignetteIndexEntry{strum-examples}
+% \VignettePackage{strum}
+
+\title{\textbf{strum} package - examples}
+\author{Yeunjoo E. Song, Nathan J. Morris}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+This document contains the whole analysis process for the first three example models from the introduction document.  Note that the input data used for these examples are not necessarily simulated to give a meaningful result for each analysis.
+
+<<<label=r1, eval=TRUE>>=
+library(strum)
+set.seed(1)
+@
+
+%--------------------------------------------
+\section{Genetic association analysis}
+%--------------------------------------------
+
+This is an example of a typical genetic association analysis model with a latent trait (similar to MIMIC model).  Suppose that there are three measurements (P1, P2 and P3), and it is hypothesized that there is a single latent trait (L1) underlying the three measurements.   The latent variable L1 is influenced by a SNP and a set of variance components, polygenic(p) and random environmental(e).  Each trait is also influenced by its own random environmental factor.  This is the model diagram.
+
+\begin{center}
+\begin{figure}[ht]
+\centering
+  \includegraphics[width=0.5\textwidth]{./figures/fig_association.png}
+  \caption{Genetic association analysis model}
+  \label{fig:asso}
+\end{figure}
+\end{center}
+
+%--------------------------------------------
+\subsection{Construct model}
+%--------------------------------------------
+
+The first step is to construct a \textbf{strumModel} object specifying the above model using \textit{createStrumModel()} function.
+
+<<label=r2, eval=TRUE>>=
+assoForm1 = 
+  'L1 =~ P1 + P2 + P3 + <e>
+   L1 ~ aSNP + <p,e>
+  '
+myAssoModel = createStrumModel(formulas = assoForm1)
+myAssoModel
+@
+
+%--------------------------------------------
+\subsection{Prepare data}
+%--------------------------------------------
+
+The next step is to prepare data.  In this example, the data must be a data.frame with 4 required fields - family, id, father, mother, since the model includes the polygenic variance component (p).  To run a strum analysis, you need to construct a \textbf{strumData} object created by the \textit{createStrumData()} function with a data.frame.  The following code shows the step using the example input file ``chr1Ped.csv''.
+
+<<label=r3, eval=TRUE>>=
+dName = system.file("extdata/example_ped.csv", package = "strum")
+dF = read.csv(dName, header=T)[,1:18]
+names(dF) = c("family","id", "father","mother",names(dF)[5:18])
+myAssoData = createStrumData(dF, "Pedigree")
+myAssoData
+@
+
+%--------------------------------------------
+\subsection{Run analysis}
+%--------------------------------------------
+
+Now, run the association analysis by the function call \textit{strum()} with two previously constructed objects as the arguments.
+
+<<label=r4, eval=TRUE>>=
+myAssoResult = strum(myAssoModel, myAssoData)
+@
+
+%--------------------------------------------
+\subsection{Result}
+%--------------------------------------------
+
+The result object contains the model description and two result tables.  The first table contains the fitted parameter values with standard errors, confidence intervals, and p-values.  The second table contains the information on the model fit from four different measures.   For association analysis, you would test $H_0$: $\gamma$ = 0 versus $H_1$: $\gamma \neq$ 0.  In this model, $\gamma$ is the parameter \texttt{L1} $ \sim $ \texttt{aSNP}, which equals to 0.9445929 with the pvalue = 7.955090e-22.
+
+<<label=r5, eval=TRUE>>=
+myAssoResult
+@
+
+\newpage
+
+%--------------------------------------------
+\section{Genetic linkage analysis}
+%--------------------------------------------
+
+In this section, we show an example of a typical genetic linkage analysis model with a latent trait using IBD information.  Suppose again that there are three measurements as above (P1, P2 and 
+p3) and a single latent trait (L1) underlying the three measurements.    The latent variable L1 is influenced by a set of genetic and random variance components.   Each trait is also influenced by its own random environmental factor.  The model diagram looks like following.
+
+\begin{center}
+\begin{figure}[ht]
+\centering
+  \includegraphics[width=0.45\textwidth]{./figures/fig_linkage.png}
+  \caption{Genetic linkage analysis model}
+  \label{fig:link}
+\end{figure}
+\end{center}
+
+%--------------------------------------------
+\subsection{Construct model}
+%--------------------------------------------
+
+The above linkage model can be constrcuted as a \textbf{strumModel} object using \textit{createStrumModel()} function.
+
+<<label=r6, eval=TRUE>>=
+linkForm1 = 
+  'L1 =~ P1 + P2 + P3 + <e>
+   L1 ~ <a,p,e>
+  '
+myLinkModel = createStrumModel(formulas = linkForm1)
+myLinkModel
+@
+
+%--------------------------------------------
+\subsection{Prepare data}
+%--------------------------------------------
+
+From the above linkage analysis model, \textbf{\textit{a}} represents the major gene variance components, which requires the ibd information to be imported.  The ibd information for the family data can be imported by specifying the name of ibd file into \textit{ibdFileName} argument for \textit{createStrumData()}.  The use of the example ibd file ``GENIBD.chr1Ped.ibd'', which contains the ibd information of family data in ``chr1Ped.csv'', is shown in the following code.  We use the data.frame, dF, created for the previous association analysis model.
+
+<<label=r7, eval=TRUE>>=
+iName = system.file("extdata/GENIBD.chr1Ped.ibd", package = "strum")
+myLinkData = createStrumData(dF, "Pedigree", ibdFileName=iName)
+@
+
+%--------------------------------------------
+\subsection{Run analysis}
+%--------------------------------------------
+
+Now, run the linkage analysis by the function call \textit{strum()}.  If you want to perform the linkage analysis on all markers exist in the IBD file, you don't need to specify the marker name as an argument for \textit{strum()} function.  In this case, each marker will be analysed one by one, and the result object will contain a list of the linkage analysis results for all markers. 
+
+<<label=r8, eval=FALSE>>=
+myLinkResultAll = strum(myLinkModel, myLinkData)
+@
+
+To analyze a subset of IBD markers, then you can specify the names of them as follows;
+
+<<label=r9, eval=TRUE>>=
+mNames = c("chr1marker1", "chr1marker2")
+myLinkResult = strum(myLinkModel, myLinkData, ibdMarkers=mNames)
+@
+
+%--------------------------------------------
+\subsection{Result}
+%--------------------------------------------
+
+The result object again contains the model description and result tables.  The first table contains the fitted parameter values with standard errors, confidence intervals, and p-values.  The second table contains the information on the model fit from four different measures.   For linkage analysis, you would test $H_0$: $\alpha$ = 0 versus $H_1$: $\alpha \neq$ 0.  In this model, $\alpha$ is the parameter \texttt{L1} $ \sim\sim $ \texttt{L1<p>}, which equals to 1.3114935 with the pvalue = 5.973887e-03.
+
+<<label=r10, eval=TRUE>>=
+myLinkResult[[1]]
+@
+
+\newpage
+
+%--------------------------------------------
+\section{Structural Equation Model}
+%--------------------------------------------
+
+This is an example of a SEM model with latent variables and polygeneic effect.  Suppose that there are six measurements and three underline latent variables.  anger is a latent variable which underlies the two measurements (A1, A2), bp is a latent variable which underlies the two measurements (SBP, DBP) and stress is a latent variable which underlies the two measurements (S1, S2).   bp is caused by anger and stress, and stress is caused by anger and a SNP (rs6040343).  All traits and latent variables are also influenced by their own polygenic and random variance components except stress, which the variance is fixed at 0.1 for both polygenic and random componants.   The model diagram looks like following.
+
+\begin{center}
+\begin{figure}[ht]
+\centering
+  \includegraphics[width=0.9\textwidth]{./figures/fig_model0.png}
+  \caption{Structural equation model}
+  \label{fig:sem}
+\end{figure}
+\end{center}
+
+%--------------------------------------------
+\subsection{Construct model}
+%--------------------------------------------
+
+The above SEM model can be constrcuted as a \textbf{strumModel} object using \textit{createStrumModel()} function.
+
+<<label=r11, eval=TRUE>>=
+semForm1 = 
+  'bp =~ SBP + DBP
+   anger =~ A1 + A2
+   stress =~ S1 + S2
+   bp ~ anger + stress
+   stress ~ anger + rs6040343
+   var(stress) = .1
+  '
+mySemModel = createStrumModel(formulas = semForm1)
+mySemModel
+@
+
+%--------------------------------------------
+\subsection{Prepare data}
+%--------------------------------------------
+
+The next step is to prepare data.  Note again that the data must be a data.frame with 4 required fields - family, id, father, mother, since the model includes the polygenic variance component (p) by default.  A \textbf{strumData} object is created by \textit{createStrumData()} function with a data.frame.  Again, we use the data.frame, dF, created above using the example input file ``chr1Ped.csv''.
+
+
+<<label=r12, eval=TRUE>>=
+mySemData = createStrumData(dF, "Pedigree")
+mySemData
+@
+
+%--------------------------------------------
+\subsection{Run analysis}
+%--------------------------------------------
+
+Now, run the analysis by the function call \textit{strum()} with two previously constructed objects as the arguments.
+
+<<label=r13, eval=TRUE>>=
+mySemResult = strum(mySemModel, mySemData)
+@
+
+%--------------------------------------------
+\subsection{Result}
+%--------------------------------------------
+
+The result object again contains the model description and result tables.  To test the SNP effect to stress, you would test $H_0$: $\gamma$ = 0 versus $H_1$: $\gamma \neq$ 0.  In this model, $\gamma$ is the parameter \texttt{stress} $ \sim $ \texttt{rs6040343}, which equals to 1.013427436 with the pvalue = 2.000891e-12.
+
+<<label=14, eval=TRUE>>=
+mySemResult
+@
+
+\newpage
+
+%------------------------------------
+\section{SessionInfo}
+%-------------------------------------
+
+<<sessionInfo>>=
+sessionInfo();
+@ 
+
+\begin{thebibliography}{}
+
+\bibitem{Morris2010}
+Morris, N.J., Elston, R.C., \& Stein, C.M. (2010).
+\newblock A framework for structural equation models in general pedigrees.
+\newblock \emph{Human heredity}, 70, 278--286.
+
+\end{thebibliography}
+
+\end{document}
