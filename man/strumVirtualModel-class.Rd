@@ -25,6 +25,8 @@
 \alias{varList<-,strumVirtualModel-method}
 \alias{varList,strumVirtualModel-method}
 \alias{show,strumVirtualModel-method}
+\alias{plot,strumVirtualModel-method}
+
 
 \title{Class \code{"strumVirtualModel"}}
 \description{
@@ -64,6 +66,8 @@ the internal matrix representation of the model.
     \item{ascertainment}{\code{signature(object = "strumVirtualModel")}: Accessor function, returns the ascertainment definition of the model.}
     \item{ascertainment<-}{\code{signature(object = "strumVirtualModel", value)}: Modifier function, sets the ascertainment of the model with a given value.}
     \item{show}{\code{signature(object = "strumVirtualModel")}: Print a summary of the model.}
+    \item{plot}{\preformatted{signature(object = "strumVirtualModel", layoutType="dot",
+    name="strumVirtualModel", toFile=TRUE, fileType="dot")}: Plot the model.}
   }
 }
 \seealso{

@@ -61,6 +61,7 @@ setMethod('traitMissingRate<-', signature(object = 'strumSimModel'),
             return(object)
           }
 )
+
 #------------------------------------------------------------------------------
 # show generic functions
 #------------------------------------------------------------------------------
@@ -82,5 +83,18 @@ setMethod("show", signature(object = "strumSimModel"),
 
             cat("\nMarker info:\n")
             show(object@markerInfo)
+          }
+)
+
+#------------------------------------------------------------------------------
+# plot generic functions
+#------------------------------------------------------------------------------
+setMethod("plot", "strumSimModel",
+          function(x, y, name="strumSimModel", toFile=TRUE, fileType="dot", ...) 
+          {
+            if (missing(y))
+              y = "dot"
+
+            .plotModel(x, layoutType=y, name=name, toFile=toFile, fileType=fileType, ...)
           }
 )

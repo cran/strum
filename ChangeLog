@@ -1,0 +1,15 @@
+Changes from Version 0.1 to 0.2 [2014-01-30] Yeunjoo Song <yeunjoo.song@cwru.edu>
+
+  * DESCRIPTION:
+    - Changed Version to 0.2
+    - Added Depends Rgraphviz(>= 2.6.0) for the new plot methods for strumModels
+    - Added Imports Rcpp to comply with the coming new Rcpp 0-11-0 
+
+  * NAMESPACE:
+    - Added importFrom(Rcpp, evalCpp) to comply with the coming new Rcpp 0-11-0
+
+  * R & man:
+    - Added plot method to strumVirtualModel.R, strumSimModel.R, strumModel.R
+    - Updated the corresponding Rd files
+
+Initial Release Version 0.1 [2013-11-04]  Yeunjoo Song <yeunjoo.song@cwru.edu>

@@ -1,8 +1,10 @@
 useDynLib(strum)
 exportPattern("^[[:alpha:]]+")
 
-import('pedigree','methods')
+import(pedigree, methods)
+importFrom(Rgraphviz, agopen, plot, toFile)
 importFrom(MASS, ginv)
+importFrom(Rcpp, evalCpp)
 
 export(
     "createStrumData",

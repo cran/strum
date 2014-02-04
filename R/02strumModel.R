@@ -25,3 +25,16 @@ setMethod("show", signature(object = "strumModel"),
             .showModel(object, "strumModel")
           }
 )
+
+#------------------------------------------------------------------------------
+# plot generic functions
+#------------------------------------------------------------------------------
+setMethod("plot", "strumModel",
+          function(x, y, name="strumModel", toFile=TRUE, fileType="dot", ...) 
+          {
+            if (missing(y))
+              y = "dot"
+
+            .plotModel(x, layoutType=y, name=name, toFile=toFile, fileType=fileType, ...)
+          }
+)

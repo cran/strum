@@ -3,6 +3,7 @@
 
 \alias{strumModel-class}
 \alias{show,strumModel-method}
+\alias{plot,strumModel-method}
 
 \title{Class \code{"strumModel"}}
 \description{
@@ -35,6 +36,8 @@ Class \code{"\linkS4class{strumVirtualModel}"}, directly.
 \section{Methods}{
   \describe{
     \item{show}{\code{signature(object = "strumModel")}: Print a summary of the model.}
+    \item{plot}{\preformatted{signature(object = "strumModel", layoutType="dot",
+    name="strumModel", toFile=TRUE, fileType="dot")}: Plot the model.}
   }
 }
 \seealso{

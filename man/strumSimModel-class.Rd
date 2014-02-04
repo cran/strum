@@ -11,6 +11,7 @@
 \alias{traitMissingRate<-,strumSimModel-method}
 \alias{traitMissingRate,strumSimModel-method}
 \alias{show,strumSimModel-method}
+\alias{plot,strumSimModel-method}
 
 \title{Class \code{"strumSimModel"}}
 \description{
@@ -47,6 +48,8 @@ Class \code{"\linkS4class{strumVirtualModel}"}, directly.
     \item{markerInfo}{\code{signature(object = "strumSimModel")}: Accessor function, returns the markerInfo of the model.}
     \item{traitMissingRate}{\code{signature(object = "strumSimModel")}: Accessor function, returns the traitMissingRate of the model.}
     \item{show}{\code{signature(object = "strumSimModel")}: Print a summary of the model.}
+    \item{plot}{\preformatted{signature(object = "strumSimModel", layoutType="dot",
+    name="strumSimModel", toFile=TRUE, fileType="dot")}: Plot the model.}
   }
 }
 \seealso{
