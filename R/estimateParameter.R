@@ -17,7 +17,7 @@
 # Calculate the model parameters in stage 1.
 # - Estimate delta parameters, C and V in Equation 5 and 6.
 #------------------------------------------------------------------------------
-.estimateDeltaParameter = function(y, x, vc)
+.estimateDeltaParameter = function(y, x, vc, step1OptimControl)
 {
   numTrait = ncol(y$yAll[[1]])
   numCov   = ncol(x$xAll[[1]])
@@ -63,7 +63,7 @@
       vcpt1 = mapply(.filterMissingVC, vc$vcPro, missingYp1, missingYp1, SIMPLIFY=FALSE) 
     }
 
-    temp1 = .computeUnivariateLL(yt1, xt1, vct1, ypt1, xpt1, vcpt1)
+    temp1 = .computeUnivariateLL(yt1, xt1, vct1, ypt1, xpt1, vcpt1, step1OptimControl)
 
     betaMat[,t1] = temp1$beta
     for( v in 1:numVC )
@@ -105,7 +105,7 @@
 
       temp2 = .computeBivariateLL(yt1,  xt1,  vct1,  yt2,  xt2,  vct2,  vc12,
                                  ypt1, xpt1, vcpt1, ypt2, xpt2, vcpt2, vcp12,
-                                 bet12, sig12)
+                                 bet12, sig12, step1OptimControl)
 
       for( v in 1:numVC )	
       {	
@@ -122,7 +122,7 @@
 # Calculate the model parameters in stage 2.
 # - Estimate reduced model parameters (theta), Equation 10.
 #------------------------------------------------------------------------------
-.estimateThetaParameter = function(model, delta, w, startTheta)
+.estimateThetaParameter = function(model, delta, w, startTheta, step2OptimControl)
 {
   positive = grep("<", paramNames(model))
 
@@ -147,28 +147,22 @@
 
   optimOut = list()
   mymin = 10^100
-  myeps = .Machine$double.eps
-  myiter = 5000
 
   for( i in 1:length(startTheta) )
   {
     optimOut[[i]] = tryCatch(
                       optim(startTheta[[i]]$startVal[1:lengthNV],
                             Qstar,
-                            control = list(maxit = myiter,
-                                           #trace = 1,
-                                           reltol= (myeps)^(1)),
-                            method= "BFGS"),
+                            control = step2OptimControl,
+                            method = "BFGS"),
                       error = function(d)
                               {
                                 sval = startTheta[[i]]$startVal[1:lengthNV] + rnorm(lengthNV, sd=.1)
                                 return(tryCatch(
                                          optim(sval,
                                                Qstar,
-                                               control = list(maxit=myiter,
-                                                              #trace=1,
-                                                              reltol=(myeps)^(1)),
-                                               method="BFGS"),
+                                               control = step2OptimControl,
+                                               method = "BFGS"),
                                          error = function(d) list(value=10^100,par=NA)))
                               })
 
@@ -208,7 +202,7 @@
 # A function which utilizes the C likelihood function to estimate
 #  the log-likelihood of "saturated model" - univariate .
 #------------------------------------------------------------------------------
-.computeUnivariateLL = function(y, x, vc, yp, xp, vcp)
+.computeUnivariateLL = function(y, x, vc, yp, xp, vcp, step1OptimControl)
 {
   numCov = ncol(x[[1]])
   numVC  = length(vc[[1]])         
@@ -244,7 +238,7 @@
         return(logLikelihood - logLikelihoodP)
       }
   
-  optimOut = optim(startVal, Q, control=list(fnscale = -10, maxit = 5500))
+  optimOut = optim(startVal, Q, control=step1OptimControl)
 
   if( optimOut$convergence != 0 )
     warning("optim did not converge in stage 1.")
@@ -261,7 +255,7 @@
 #------------------------------------------------------------------------------
 .computeBivariateLL = function(yt1,  xt1,  vct1,  yt2,  xt2,  vct2,  vc12,
                                ypt1, xpt1, vcpt1, ypt2, xpt2, vcpt2, vcp12,
-                               beta, sig)
+                               beta, sig, step1OptimControl)
 {
   numVC = length(vct1[[1]])         
 
@@ -288,12 +282,12 @@
         return(logLikelihood - logLikelihoodP)
       }
 
-  optimOut1 = optim(startVal1,     Q, control=list(fnscale = -10, maxit = 5500))
+  optimOut1 = optim(startVal1, Q, control=step1OptimControl)
 
   if( optimOut1$convergence != 0 )
     warning("optim did not converge in stage 1.")
 
-  optimOut2 = optim(startVal2,     Q, control=list(fnscale = -10, maxit = 5500))
+  optimOut2 = optim(startVal2, Q, control=step1OptimControl)
 
   if( optimOut2$convergence != 0 )
     warning("optim did not converge in stage 1.")

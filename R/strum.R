@@ -13,7 +13,11 @@
 #------------------------------------------------------------------------------
 # The main analysis given StrumModel and input data
 #------------------------------------------------------------------------------
-strum = function(myStrumModel, myStrumData, ibdMarkers=NULL)
+strum = function(myStrumModel, myStrumData,
+                 step1OptimControl = list(maxit=5500, fnscale=-10),
+                 startValueControl = list(initPopulation=NULL, nChildren=NULL, nGenerations=NULL, selection1=NULL, selection2=NULL),
+                 step2OptimControl = list(maxit=5000, reltol=.Machine$double.eps),
+                 ibdMarkers = NULL)
 {
   # 1. Check input parameters
   #---------------------------
@@ -133,11 +137,11 @@ strum = function(myStrumModel, myStrumData, ibdMarkers=NULL)
 
       vcPro = list()
       if( length(nonProbands) > 0 )
-        vcPro = mapply(.filterMissingVC, vcPEC, nonProbands, nonProbands, SIMPLIFY=FALSE) 
+        vcPro = mapply(.filterMissingVC, vcAll, nonProbands, nonProbands, SIMPLIFY=FALSE) 
 
       vc = list(vcAll = vcAll, vcPro = vcPro)
         
-      mFittedModel = .fitModel(myStrumModel, y, x, vc)
+      mFittedModel = .fitModel(myStrumModel, y, x, vc, step1OptimControl, startValueControl, step2OptimControl)
 
       myFittedModel[[mName]] = mFittedModel
     }
@@ -149,7 +153,7 @@ strum = function(myStrumModel, myStrumData, ibdMarkers=NULL)
 
     vc = list(vcAll = vcPEC, vcPro = vcPro)
 
-    myFittedModel = .fitModel(myStrumModel, y, x, vc)
+    myFittedModel = .fitModel(myStrumModel, y, x, vc, step1OptimControl, startValueControl, step2OptimControl)
   }
 
   cat("\nAnalysis completed!\n\n")
@@ -169,7 +173,15 @@ strum = function(myStrumModel, myStrumData, ibdMarkers=NULL)
   if( !length(yNames) )
     stop("No y names exist in StrumModel")
 
-  yAll = dataVals(myStrumData)[,yNames, drop=FALSE]
+  yAll = tryCatch(dataVals(myStrumData)[,yNames, drop=FALSE],
+                  error=function(e)
+                        {          
+                          stop(paste("Some of variables expected from the model ",
+                                     "are not in the data.  Please check the ",        
+                                     "variable names in your model and data!",          
+                               sep=""))          
+                        })          
+
   yAll = split(yAll, dataVals(myStrumData)$family)
   yAll = lapply(yAll, data.matrix)
   
@@ -198,7 +210,15 @@ strum = function(myStrumModel, myStrumData, ibdMarkers=NULL)
     xAll = lapply(xAll, data.matrix)
   } else
   {
-    xAll = dataVals(myStrumData)[,xNames, drop=FALSE]
+    xAll = tryCatch(dataVals(myStrumData)[,xNames, drop=FALSE],
+                    error=function(e)
+                          {          
+                            stop(paste("Some of covariates expected from the model ",
+                                       "are not in the data.  Please check the ",        
+                                       "covariate names in your model and data!",          
+                                 sep=""))          
+                          })          
+
     xAll = lapply(split(xAll, dataVals(myStrumData)$family),
                   function(xi)
                   {

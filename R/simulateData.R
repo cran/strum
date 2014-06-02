@@ -184,7 +184,8 @@ simulateStrumData = function(simModel, inData = NULL, N = NULL)
       maxFamilyIndex = 0
       shortN = nrow(dataVals(retObj))
 
-      while( nrow(simdata) < N )
+      counter = 1
+      while( nrow(simdata) < N && counter < (shortN*1000) )
       {  
         # keep simulating until samplesize is greater than N
         #----------------------------------------------------
@@ -304,7 +305,12 @@ simulateStrumData = function(simModel, inData = NULL, N = NULL)
 
           maxFamilyIndex = max(simdataTmp$family)
         }
+      
+        counter = counter + 1
       }
+
+      if( counter >= shortN*1000 )
+        stop("Ascertainment probability too close to 0, no probands exist with 1000 replicates!")
 
       simdata = .simulateMissing(simdata, traitMissingRate(simModel))
 

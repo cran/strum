@@ -17,8 +17,10 @@
 
 This document contains the whole analysis process for the first three example models from the introduction document.  Note that the input data used for these examples are not necessarily simulated to give a meaningful result for each analysis.
 
-<<<label=r1, eval=TRUE>>=
+<<<label=r0, eval=TRUE>>=
 library(strum)
+@
+<<<label=r1, eval=TRUE, echo=FALSE, results=hide>>=
 set.seed(1)
 @
 

@@ -13,7 +13,7 @@
 #------------------------------------------------------------------------------
 # Fitting the Model.
 #------------------------------------------------------------------------------
-.fitModel = function(model, y, x, vc)
+.fitModel = function(model, y, x, vc, step1OptimControl, startValueControl, step2OptimControl)
 {  
   numTrait = ncol(y$yAll[[1]])
   numCov   = ncol(x$xAll[[1]])
@@ -36,11 +36,11 @@
 
   # 1. Fit stage1 
   #---------------
-  s1 = .fitModelStep1(y, x, vc)
+  s1 = .fitModelStep1(y, x, vc, step1OptimControl)
 
   # 2. Fit stage2 
   #---------------
-  s2 = .fitModelStep2(s1, model)
+  s2 = .fitModelStep2(s1, model, startValueControl, step2OptimControl)
 
   # error - Parameters are not locally identifiable!
   if( df0 != ncol(s2$dfOrthog) )
@@ -85,9 +85,9 @@
 # Fitting the Model, stage 1
 # - Form a limited information estimate for the saturated model.
 #------------------------------------------------------------------------------
-.fitModelStep1 = function(y, x, vc)
+.fitModelStep1 = function(y, x, vc, step1OptimControl)
 {
-  CV = .estimateDeltaParameter(y, x, vc)
+  CV = .estimateDeltaParameter(y, x, vc, step1OptimControl)
   De = .estimateDeltaDerivative(y, x, vc, CV$C, CV$V)
   JF = .estimateDeltaCovariance(De)
 
@@ -102,10 +102,10 @@
 # Fitting the Model, stage 2
 # - Estimate parameters and asymptotic covariance matrix of the model.
 #------------------------------------------------------------------------------
-.fitModelStep2 = function(s1, model)
+.fitModelStep2 = function(s1, model, startValueControl, step2OptimControl)
 {
-  startTheta = .generateStartValue(model, s1$delta, s1$w)
-  optimTheta = .estimateThetaParameter(model, s1$delta, s1$w, startTheta)
+  startTheta = .generateStartValue(model, s1$delta, s1$w, startValueControl)
+  optimTheta = .estimateThetaParameter(model, s1$delta, s1$w, startTheta, step2OptimControl)
   parCov     = .estimateThetaCovariance(model, s1, optimTheta)
 
   .printInfoLine("Fitting model step 2", "Done", 50, 2)
@@ -223,7 +223,7 @@
                       df      = c(df0, rank, d2, df0),
                       pValue  = c(pVal0, pVal1, pVal2, pVal3))
   
-  row.names(dfTest) = c("Un-adjusted", "Mean scaled", "Mean-Variance scaled", "Simulated")
+  row.names(dfTest) = c("Un-adjusted", "Mean adjusted", "Mean-Variance adjusted", "Theoretically corrected")
 
   .printInfoLine("Testing model fit", "Done", 50, 2)
 

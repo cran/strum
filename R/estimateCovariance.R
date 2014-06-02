@@ -66,7 +66,16 @@
   #
   # 2. Calculate covariance matrix
   #--------------------------------
-  Ji = solve(J)
+  #Ji = solve(J)
+  Ji = tryCatch(solve(J),
+                error=function(e)
+                      {
+                        stop(paste("Covariance matrix of the model parameters ",
+                                   "is not invertable in step 1!  The model may ",
+                                   "not be identifiable, or the sample size ",
+                                   "is too small.",
+                             sep=""))
+                      })
 
   JiFJit = Ji %*% F %*% t(Ji)
 

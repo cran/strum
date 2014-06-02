@@ -62,7 +62,7 @@ Three different equations are allowed in the formulas syntax:
 
   The "=" operator specifies the constraints in the model, i.e., fixing a model 
   parameter - fixed variance, fixed covariance.  
-  The left hand side of the "~" must contain a reserved word for constraint - 
+  The left hand side of the "=" must contain a reserved word for constraint - 
   "var" or "cov" - with one or two variable  names depending on the word.  
   The right hand side of the "=" is a fixed value.  Here are some examples:
 

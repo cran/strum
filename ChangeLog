@@ -1,3 +1,18 @@
+Changes from Version 0.2 to 0.3 [2014-05-30] Yeunjoo Song <yeunjoo.song@cwru.edu>
+
+  * DESCRIPTION:
+    - Changed Version to 0.3
+
+  * R & man:
+    - Added new parameter options (step1OptimControl, startValueControl, step1OptimControl) 
+      in strum() giving users the flexibility on optim() and generateStartValue() functions
+    - Added new parameter option (fixLoadingToOne) in createStrumModel() giving users 
+      a way to shut off the defualt setting that the first indicator variable for 
+      each factor to have a coefficient of 1
+    - Added more informative error messages for the several reported cases by users 
+    - Renamed "Simulated" to "Theoretically corrected" for the model fit result
+    - Updated the corresponding Rd files
+
 Changes from Version 0.1 to 0.2 [2014-01-30] Yeunjoo Song <yeunjoo.song@cwru.edu>
 
   * DESCRIPTION:

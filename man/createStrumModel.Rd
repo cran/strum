@@ -10,7 +10,8 @@ A function to create an object of class strumModel.
 createStrumModel(formulas,
                  ascertainment = NULL,
                  defaultError = '<p,e>',
-                 assumeExogCovariate = TRUE)
+                 assumeExogCovariate = TRUE,
+                 fixLoadingToOne = TRUE)
 }
 \arguments{
   \item{formulas}{Vector of expressions that defines the relationship among the 
@@ -22,6 +23,8 @@ createStrumModel(formulas,
   \item{assumeExogCovariate}{Logical. If TRUE, then it is assumed that any observed, 
   quantitative exogenous traits are covariates.  Otherwise, they are treated as  
   latent and dependent variables.}
+  \item{fixLoadingToOne}{Logical. If TRUE, then it sets the first indicator variable 
+  for each factor to have a coefficient of 1.  Otherwise, all coefficients are estimated.}  
 }
 \details{
 This function is used to create a trait model which will be an input parameter 
@@ -52,14 +55,21 @@ Three different equations are allowed in the formulas syntax:
 
   By default, the endogenous error terms are uncorrelated, but the exogenous 
   variables are correlated.  To add a correlation between endogenous terms, use 
-  "cov" operator.  For example, \preformatted{cov(X,Y) = NA}.
+  "cov" operator.  For example, \preformatted{cov(x,y) = NA}.
+
+  \item Removing a constraint on a coefficient
+
+  By default, the value of \code{fixLoadingToOne} equals TRUE, setting 
+  the first indicator variable for each factor to have a coefficient of 1.  To 
+  disable this option selectively for a coefficient to be estimated, use "coef" 
+  operator.  For example, \preformatted{coef(y1,z1) = NA}.
 
   \item Constraints
 
   The "=" operator specifies the constraints in the model, i.e., fixing a model 
   parameter - fixed variance, fixed covariance, or fixed coefficient.  
-  The left hand side of the "~" must contain a reserved word for constraint - 
-  "var" or "cov" - with one or two variable  names depending on the word.  
+  The left hand side of the "=" must contain a reserved word for constraint - 
+  "var", "cov", or "coef" - with one or two variable  names depending on the word.  
   The right hand side of the "=" is a fixed value.  Here are some examples:
 
   \itemize{
@@ -69,6 +79,9 @@ Three different equations are allowed in the formulas syntax:
 
     \item Fixing the covariance between two latent variables:
       \preformatted{cov(z1,z2) = 4}
+
+    \item Fixing the coefficient between two variables:
+      \preformatted{coef(y1,z1) = 2}
   }
 }
 

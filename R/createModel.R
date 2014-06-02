@@ -16,13 +16,15 @@ createStrumModel = function(
                      formulas,
                      ascertainment = NULL,
                      defaultError = '<p,e>',
-                     assumeExogCovariate = TRUE
+                     assumeExogCovariate = TRUE,
+                     fixLoadingToOne = TRUE
                    )
 {
   retObj = .createModel(formulas = formulas,
                         parseAsSimModel = FALSE,
                         defaultError = defaultError,
-                        assumeExogCovariate = assumeExogCovariate)
+                        assumeExogCovariate = assumeExogCovariate,
+                        fixLoadingToOne = fixLoadingToOne)
 
   retObj@ascertainment = ascertainment
 
@@ -46,7 +48,8 @@ createSimModel = function(
   retObj = .createModel(formulas = formulas,
                         parseAsSimModel = TRUE,
                         defaultError = defaultError,
-                        assumeExogCovariate = assumeExogCovariate)
+                        assumeExogCovariate = assumeExogCovariate,
+                        fixLoadingToOne = FALSE)
 
   retObj@ascertainment = ascertainment
   retObj@markerInfo    = markerInfo
@@ -98,7 +101,8 @@ createSimModel = function(
                  formulas,
                  parseAsSimModel = FALSE,
                  defaultError = '<p,e>',
-                 assumeExogCovariate = TRUE
+                 assumeExogCovariate = TRUE,
+                 fixLoadingToOne = TRUE
                )
 {
   if( class(formulas) != "character" | length(formulas) != 1 | !nzchar(formulas) )
@@ -110,7 +114,7 @@ createSimModel = function(
   if( length(re) == 0 )
     defaultError = '<e>'
 
-  formulas = .parseFormulas(formulas, parseAsSimModel, defaultError)
+  formulas = .parseFormulas(formulas, parseAsSimModel, defaultError, fixLoadingToOne)
   varLists = .buildVarList(formulas, parseAsSimModel, assumeExogCovariate)
 
   varList             = varLists$varList
@@ -371,20 +375,20 @@ createSimModel = function(
       yMatch         = match(args[1:2],yNames); isYMatch=!is.na(yMatch)
       covariateMatch = match(args[1:2],covNames); isCovariateMatch=!is.na(covariateMatch)
       
-      if( all(!is.na(isEitaMatch)) )
+      if( all(isEitaMatch) )
       {
         ptBeta[eitaMatch[1],eitaMatch[2]] = s$rhs
-      } else if( any(isEitaMatch) & any(isYMatch) )
+      } else if( any(isYMatch) & any(isEitaMatch) )
       {
-        tmp = .getIndex(yMatch,eitaMatch)
+        tmp = .getIndex(yMatch,eitaMatch,isYMatch,isEitaMatch)
         ptLambda[tmp[1],tmp[2]] = s$rhs
-      } else if( any(isCovariateMatch) & any(isYMatch) )
+      } else if( any(isYMatch) & any(isCovariateMatch) )
       {
-        tmp = .getIndex(yMatch,eitaMatch)
+        tmp = .getIndex(yMatch,covariateMatch,isYMatch,isCovariateMatch)
         ptGammaM[tmp[1],tmp[2]] = s$rhs
-      } else if( any(isCovariateMatch) & any(coef) )
+      } else if( any(isEitaMatch) & any(isCovariateMatch) )
       {
-        tmp = .getIndex(yMatch,eitaMatch)
+        tmp = .getIndex(eitaMatch,covariateMatch,isEitaMatch,isCovariateMatch)
         ptGammaS[tmp[1],tmp[2]] = s$rhs
       } else
         stop(paste("Error in constraint equation: coef between '", args[1],
@@ -539,7 +543,7 @@ createSimModel = function(
 #------------------------------------------------------------------------------
 # Parse out formulas
 #------------------------------------------------------------------------------
-.parseFormulas = function(formulas, parseAsSimModel, defaultError)
+.parseFormulas = function(formulas, parseAsSimModel, defaultError, fixLoadingToOne)
 {
   # remove end of line
   #--------------------
@@ -653,7 +657,7 @@ createSimModel = function(
   formulasMeasurement = lapply(formulasMeasurement,
                                .getFormulaStuff,
                                parseAsSimModel  = parseAsSimModel,
-                               defualt1         = TRUE,
+                               defualt1         = fixLoadingToOne,
                                ordinalVars      = ordinalVars,
                                defualtIntercept = TRUE,
                                defaultError     = defaultError)

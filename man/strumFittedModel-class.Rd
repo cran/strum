@@ -29,7 +29,7 @@ Objects should be created by the calls to the \code{\link{strum}} function.
     \item{\code{deltaParametersCovMatrix}:}{For internal use}
     \item{\code{parDiff}:}{For internal use}
     \item{\code{parDiffCovMatrix}:}{For internal use}
-    \item{\code{chiTestOut}:}{Object of class \code{"data.frame"} containing the un-adjusted(1), mean scaled(2), and mean/variance scaled(3) chi-square index of fits with the degrees of freedom and p-values along with the exact p-value(4) from simulation.}
+    \item{\code{chiTestOut}:}{Object of class \code{"data.frame"} containing the un-adjusted(1), mean scaled(2), and mean/variance scaled(3) chi-square index of fits with the degrees of freedom and p-values along with the theoretically corrected p-value(4) from simulation.}
   }
 }
 \section{Methods}{

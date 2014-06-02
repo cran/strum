@@ -18,7 +18,7 @@ in a future release.
 Package: \tab strum\cr
 Type: \tab Package\cr
 Version: \tab 0.2\cr
-Date: \tab 2014-02-04\cr
+Date: \tab 2014-06-02\cr
 License: \tab GPL (>= 2)\cr
 }
 The following illustrates the typical steps for a strum analysis.

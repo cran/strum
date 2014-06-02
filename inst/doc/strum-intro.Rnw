@@ -26,8 +26,10 @@ The \textbf{strum} package implements the framework for structural equation mode
 \bigskip
 Assuming that you have the \textbf{strum} package installed, you first need to load it:
 
-<<<label=r1, eval=TRUE>>=
+<<<label=r0, eval=TRUE>>=
 library(strum)
+@
+<<<label=r1, eval=TRUE, echo=FALSE, results=hide>>=
 set.seed(1)
 @
 
@@ -159,8 +161,9 @@ Here are some examples of `\textit{formulas}' for different types of analysis wi
   & 
   %\begin{minipage}{5cm}
     \texttt{formulas = ` \newline
-            z1 =\( \sim \) X1 + X2 + X3 + <e>\newline
+            z1 =\( \sim \) X1 + X2 + X3 + <e> \newline
             z2 =\( \sim \) X4 + X5 + X6 + <e> \newline
+            g1 =\( \sim \) <> \newline
             g1 \( \sim \) rs6040343 + <p> \newline
             z1 \( \sim \) g1 + <e> \newline
             z2 \( \sim \) g1 + <e> \newline
@@ -490,10 +493,13 @@ myLinkResult = strum(myLinkModel, myPedIBD, ibdMarkers=mNames)
 As a result of \textit{strum()} run, an object (or a list of objects in case of analysis with multiple IBD markers) of \textbf{strumFittedModel} class, which contains the model description and two result tables. The first table contains the fitted parameter values with standard errors, confidence intervals, and p-values. The second table contains the information on the model fit from four different measures, with the degrees of freedom and p-values.
 \begin{enumerate}
 \item the un-adjusted $ \chi^2 $ index of fit
-\item the mean scaled $ \chi^2 $ index of fit
-\item the mean and variance scaled $ \chi^2 $ index of fit
-\item the exact p-value from simulation
+\item the mean adjusted $ \chi^2 $ index of fit
+\item the mean and variance adjusted $ \chi^2 $ index of fit
+\item the theoretically corrected $ \chi^2 $ index of fit
 \end{enumerate}
+
+\bigskip
+The p-value for the theoretically corrected $ \chi^2 $ index assumes the $ \chi^2 $ statistic follows the distribution of a weighted sum of $ \chi^2 $ random variables. To calculate the p-value, we simulate from this theoretical distribution, and we count the number of simulations which exceed the test statistic.
 
 \newpage
 %------------------------------------
