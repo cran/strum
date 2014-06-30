@@ -31,7 +31,7 @@ strum = function(myStrumModel, myStrumData,
 
   # 2. Check ascertainment
   #------------------------
-  nonProbands = list()
+  probands = list()
 
   if( isPedigree )
   {
@@ -50,7 +50,7 @@ strum = function(myStrumModel, myStrumData,
         aValues = dataVals(myStrumData)[,aName, drop=FALSE]
         aValues = split(aValues, dataVals(myStrumData)$family)
 
-        nonProbands = lapply(aValues, function(pk) return(which(pk==0)))
+        probands = lapply(aValues, function(pk) return(pk==1))
 
         pCount = unlist(lapply(aValues, sum))
         if( any(pCount > 1) )
@@ -76,8 +76,8 @@ strum = function(myStrumModel, myStrumData,
 
   # 3. Prepare analysis data
   #--------------------------
-  y     = .getAnalysisY( myStrumModel, myStrumData, nonProbands)
-  x     = .getAnalysisX( myStrumModel, myStrumData, nonProbands)
+  y     = .getAnalysisY( myStrumModel, myStrumData, probands)
+  x     = .getAnalysisX( myStrumModel, myStrumData, probands)
   vcPEC = .getAnalysisVC(myStrumModel, myStrumData, allRE)
 
   myFittedModel = list()
@@ -136,24 +136,26 @@ strum = function(myStrumModel, myStrumData,
                      SIMPLIFY = FALSE)
 
       vcPro = list()
-      if( length(nonProbands) > 0 )
-        vcPro = mapply(.filterMissingVC, vcAll, nonProbands, nonProbands, SIMPLIFY=FALSE) 
+      if( length(probands) > 0 )
+        vcPro = mapply(.filterMissingVC, vcAll, probands, probands, SIMPLIFY=FALSE) 
 
       vc = list(vcAll = vcAll, vcPro = vcPro)
-        
-      mFittedModel = .fitModel(myStrumModel, y, x, vc, step1OptimControl, startValueControl, step2OptimControl)
+      filtered = .getValidAnalysisData(y, x, vc)
+
+      mFittedModel = .fitModel(myStrumModel, filtered$y, filtered$x, filtered$vc, step1OptimControl, startValueControl, step2OptimControl)
 
       myFittedModel[[mName]] = mFittedModel
     }
   } else
   {
     vcPro = list()
-    if( length(nonProbands) > 0 )
-      vcPro = mapply(.filterMissingVC, vcPEC, nonProbands, nonProbands, SIMPLIFY=FALSE) 
+    if( length(probands) > 0 )
+      vcPro = mapply(.filterMissingVC, vcPEC, probands, probands, SIMPLIFY=FALSE) 
 
     vc = list(vcAll = vcPEC, vcPro = vcPro)
+    filtered = .getValidAnalysisData(y, x, vc)
 
-    myFittedModel = .fitModel(myStrumModel, y, x, vc, step1OptimControl, startValueControl, step2OptimControl)
+    myFittedModel = .fitModel(myStrumModel, filtered$y, filtered$x, filtered$vc, step1OptimControl, startValueControl, step2OptimControl)
   }
 
   cat("\nAnalysis completed!\n\n")
@@ -165,7 +167,7 @@ strum = function(myStrumModel, myStrumData,
 # Model analysis data Y from StrumData given StrumModel
 # - Extract Y
 #------------------------------------------------------------------------------
-.getAnalysisY = function(myStrumModel, myStrumData, nonProbands)
+.getAnalysisY = function(myStrumModel, myStrumData, probands)
 {
   yNames = myStrumModel@varList$name[myStrumModel@varList$inY==TRUE]
 
@@ -186,8 +188,8 @@ strum = function(myStrumModel, myStrumData,
   yAll = lapply(yAll, data.matrix)
   
   yPro = list()
-  if( length(nonProbands) > 0 )
-    yPro = mapply(.filterMissing, yAll, nonProbands, TRUE, SIMPLIFY=FALSE) 
+  if( length(probands) > 0 )
+    yPro = mapply(.filterMissing, yAll, probands, TRUE, SIMPLIFY=FALSE) 
 
   return(list(yAll = yAll, yPro = yPro))
 }
@@ -196,7 +198,7 @@ strum = function(myStrumModel, myStrumData,
 # Model analysis data X from StrumData given StrumModel
 # - Extract X from covariates
 #------------------------------------------------------------------------------
-.getAnalysisX = function(myStrumModel, myStrumData, nonProbands)
+.getAnalysisX = function(myStrumModel, myStrumData, probands)
 {
   xNames = myStrumModel@varList$name[myStrumModel@varList$covariate==TRUE]
 
@@ -219,17 +221,20 @@ strum = function(myStrumModel, myStrumData,
                                  sep=""))          
                           })          
 
+    na_default = options("na.action")$na.action
+    options(na.action='na.pass')
     xAll = lapply(split(xAll, dataVals(myStrumData)$family),
                   function(xi)
                   {
                     xi = data.matrix(xi)
                     model.matrix(~xi)
                   })
+    options(na.action=na_default)
   }
   
   xPro = list()
-  if( length(nonProbands) > 0 )
-    xPro = mapply(.filterMissing, xAll, nonProbands, TRUE, SIMPLIFY=FALSE) 
+  if( length(probands) > 0 )
+    xPro = mapply(.filterMissing, xAll, probands, TRUE, SIMPLIFY=FALSE) 
 
   return(list(xAll = xAll, xPro = xPro))
 }
@@ -273,4 +278,44 @@ strum = function(myStrumModel, myStrumData,
   }
 
   return(vcPEC)
+}
+
+#------------------------------------------------------------------------------
+# Get valid analysis data only - take out empty ped after filtering by X & Y
+#------------------------------------------------------------------------------
+.getValidAnalysisData = function(y, x, vc)
+{
+  missingX = lapply(x$xAll, .findMissing, isX=TRUE)
+  missingY = lapply(y$yAll, function(yk) return(rowSums(is.na(yk))!= ncol(yk)))
+
+  missingXY = mapply("&", missingX, missingY)
+
+  xa  = mapply(.filterMissing,   x$xAll,   missingXY, TRUE,      SIMPLIFY=FALSE)
+  ya  = mapply(.filterMissing,   y$yAll,   missingXY, TRUE,      SIMPLIFY=FALSE)
+  vca = mapply(.filterMissingVC, vc$vcAll, missingXY, missingXY, SIMPLIFY=FALSE)
+
+  xan = Filter(function(x) nrow(x) > 0, xa)
+  ped_names = names(xan)
+  yan  = ya[ped_names]
+  vcan = vca[ped_names]
+
+  ypn = list()
+  xpn = list()
+  vcpn = list()
+
+  if( length(y$yPro) > 0 )
+  {
+    xp  = mapply(.filterMissing,   x$xPro,   missingXY, TRUE,      SIMPLIFY=FALSE)
+    yp  = mapply(.filterMissing,   y$yPro,   missingXY, TRUE,      SIMPLIFY=FALSE)
+    vcp = mapply(.filterMissingVC, vc$vcPro, missingXY, missingXY, SIMPLIFY=FALSE)
+
+    ypn  = yp[ped_names]
+    xpn  = xp[ped_names]
+    vcpn = vcp[ped_names]
+  }
+
+
+  return(list(y  = list(yAll=yan,yPro=ypn),
+              x  = list(xAll=xan,xPro=xpn),
+              vc = list(vcAll=vcan,vcPro=vcpn)))
 }

@@ -137,9 +137,12 @@ importHapmapData = function(chr, pop="CEU", ...)
 #------------------------------------------------------------------------------
 # Find the missing data
 #------------------------------------------------------------------------------
-.findMissing = function(yk)
+.findMissing = function(yk, isX)
 {
-  return(which(is.na(yk)))
+  if( isX )
+    return(complete.cases(yk))
+
+  return(!is.na(yk))
 }
 
 #------------------------------------------------------------------------------
@@ -147,16 +150,10 @@ importHapmapData = function(chr, pop="CEU", ...)
 #------------------------------------------------------------------------------
 .filterMissing = function(yk, mk, isX)
 {
-  if( length(mk) == 0 )
-    ret = (yk)
-  else
-  {
-    if( !isX )
-      ret = (yk[-mk, drop = FALSE])
-    else
-      ret = (yk[-mk,, drop = FALSE])
-  }
-  return(ret)
+  if( !isX )
+    return(yk[mk, drop = FALSE])
+
+  return(yk[mk,, drop = FALSE])
 }
 
 #------------------------------------------------------------------------------
@@ -164,15 +161,31 @@ importHapmapData = function(chr, pop="CEU", ...)
 #------------------------------------------------------------------------------
 .filterMissingVC = function(vck, mk1, mk2)
 {
-  if( length(mk1) == 0 & length(mk2) == 0 )
-    ret = (vck)
-  else if( length(mk1) == 0 )
-    ret = lapply(vck, function(z) return(z[    ,-mk2, drop = FALSE]))
-  else if( length(mk2) == 0 )
-    ret = lapply(vck, function(z) return(z[-mk1,    , drop = FALSE]))
-  else
-    ret = lapply(vck, function(z) return(z[-mk1,-mk2, drop = FALSE]))
-  return(ret)
+  return(lapply(vck, function(z) return(z[mk1,mk2, drop = FALSE])))
+}
+
+#------------------------------------------------------------------------------
+# Get filtered list of data Y, X VC
+#------------------------------------------------------------------------------
+.getYFilteredData = function(y, x, vc, t)
+{
+  tmp_y = lapply(y, function(yk) return(yk[,t]))
+
+  missingY = lapply(tmp_y, .findMissing, isX=FALSE)
+
+  yall  = mapply(.filterMissing,   tmp_y,  missingY, FALSE,    SIMPLIFY=FALSE)
+  xall  = mapply(.filterMissing,   x,      missingY, TRUE,     SIMPLIFY=FALSE)
+  vcall = mapply(.filterMissingVC, vc,     missingY, missingY, SIMPLIFY=FALSE)
+
+  return(list(y=yall,x=xall,vc=vcall, missing=missingY))
+}
+
+#------------------------------------------------------------------------------
+# Get filtered list of data COV
+#------------------------------------------------------------------------------
+.getVCFilteredData = function(vc, missingY1, missingY2)
+{
+  return(mapply(.filterMissingVC, vc, missingY1, missingY2, SIMPLIFY=FALSE))
 }
 
 #------------------------------------------------------------------------------

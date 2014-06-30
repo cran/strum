@@ -44,23 +44,19 @@
     #--------------------------------------
     # all
     #-----
-    tmp_y1    = lapply(y$yAll, function(yk) return(yk[,t1]))
-    missingY1 = lapply(tmp_y1, .findMissing)
-    
-    yt1  = mapply(.filterMissing,   tmp_y1,   missingY1, FALSE,     SIMPLIFY=FALSE) 
-    xt1  = mapply(.filterMissing,   x$xAll,   missingY1, TRUE,      SIMPLIFY=FALSE) 
-    vct1 = mapply(.filterMissingVC, vc$vcAll, missingY1, missingY1, SIMPLIFY=FALSE) 
+    t1dat = .getYFilteredData(y$yAll, x$xAll, vc$vcAll, t1)
+    yt1  = t1dat$y
+    xt1  = t1dat$x
+    vct1 = t1dat$vc
 
     if( length(y$yPro) )
     {
       # probands
       #----------
-      tmp_yp1    = lapply(y$yPro, function(yk) return(yk[,t1]))
-      missingYp1 = lapply(tmp_yp1, .findMissing)
-    
-      ypt1  = mapply(.filterMissing,   tmp_yp1,  missingYp1, FALSE,      SIMPLIFY=FALSE) 
-      xpt1  = mapply(.filterMissing,   x$xPro,   missingYp1, TRUE,       SIMPLIFY=FALSE) 
-      vcpt1 = mapply(.filterMissingVC, vc$vcPro, missingYp1, missingYp1, SIMPLIFY=FALSE) 
+      pt1dat = .getYFilteredData(y$yPro, x$xPro, vc$vcPro, t1)
+      ypt1  = pt1dat$y
+      xpt1  = pt1dat$x
+      vcpt1 = pt1dat$vc
     }
 
     temp1 = .computeUnivariateLL(yt1, xt1, vct1, ypt1, xpt1, vcpt1, step1OptimControl)
@@ -79,25 +75,21 @@
     {
       # all
       #-----
-      tmp_y2    = lapply(y$yAll, function(yk) return(yk[,t2]))
-      missingY2 = lapply(tmp_y2, .findMissing)
-    
-      yt2  = mapply(.filterMissing,   tmp_y2,   missingY2, FALSE,     SIMPLIFY=FALSE)
-      xt2  = mapply(.filterMissing,   x$xAll,   missingY2, TRUE,      SIMPLIFY=FALSE)
-      vct2 = mapply(.filterMissingVC, vc$vcAll, missingY2, missingY2, SIMPLIFY=FALSE)
-      vc12 = mapply(.filterMissingVC, vc$vcAll, missingY1, missingY2, SIMPLIFY=FALSE) 
+      t2dat = .getYFilteredData(y$yAll, x$xAll, vc$vcAll, t2)
+      yt2  = t2dat$y
+      xt2  = t2dat$x
+      vct2 = t2dat$vc
+      vc12 = .getVCFilteredData(vc$vcAll, t1dat$missing, t2dat$missing)
 
       if( length(y$yPro) )
       {
         # probands
         #----------
-        tmp_yp2    = lapply(y$yPro, function(yk) return(yk[,t2]))
-        missingYp2 = lapply(tmp_yp2, .findMissing)
-    
-        ypt2  = mapply(.filterMissing,   tmp_yp2,   missingYp2, FALSE,      SIMPLIFY=FALSE)
-        xpt2  = mapply(.filterMissing,   x$xPro,    missingYp2, TRUE,       SIMPLIFY=FALSE)
-        vcpt2 = mapply(.filterMissingVC, vc$vcPro,  missingYp2, missingYp2, SIMPLIFY=FALSE)
-        vcp12 = mapply(.filterMissingVC, vc$vcPro,  missingYp1, missingYp2, SIMPLIFY=FALSE) 
+        pt2dat = .getYFilteredData(y$yPro, x$xPro, vc$vcPro, t2)
+        ypt2  = pt2dat$y
+        xpt2  = pt2dat$x
+        vcpt2 = pt2dat$vc
+        vcp12 = .getVCFilteredData(vc$vcPro, pt1dat$missing, pt2dat$missing)
       }
 
       bet12 = matrix(betaMat[,c(t1,t2)], ncol=2)
@@ -202,13 +194,13 @@
 # A function which utilizes the C likelihood function to estimate
 #  the log-likelihood of "saturated model" - univariate .
 #------------------------------------------------------------------------------
-.computeUnivariateLL = function(y, x, vc, yp, xp, vcp, step1OptimControl)
+.computeUnivariateLL = function(yt1, xt1, vct1, ypt1, xpt1, vcpt1, step1OptimControl)
 {
-  numCov = ncol(x[[1]])
-  numVC  = length(vc[[1]])         
+  numCov = ncol(xt1[[1]])
+  numVC  = length(vct1[[1]])         
   
-  yb = do.call("c",y)
-  xb = do.call(rbind,x)
+  yb = do.call("c",yt1)
+  xb = do.call(rbind,xt1)
 
   fit = lm(yb ~ xb-1)
   betaStart = coef(fit)
@@ -229,11 +221,11 @@
         beta = matrix(theta[(numVC+1):(numVC + numCov)], ncol = 1)
 
         logLikelihood = .Call("computeLL", 
-                              y, x, vc, list(), list(), list(), list(), beta, sigma)
+                              yt1, xt1, vct1, list(), list(), list(), list(), beta, sigma)
 
-        if( length(yp) )
+        if( length(ypt1) )
           logLikelihoodP = .Call("computeLL", 
-                                 yp, xp, vcp, list(), list(), list(), list(), beta, sigma)
+                                 ypt1, xpt1, vcpt1, list(), list(), list(), list(), beta, sigma)
 
         return(logLikelihood - logLikelihoodP)
       }

@@ -1,3 +1,11 @@
+Changes from Version 0.3 to 0.4 [2014-06-30] Yeunjoo Song <yeunjoo.song@cwru.edu>
+
+  * DESCRIPTION:
+    - Changed Version to 0.4
+
+  * R:
+    - Updated to be able to handle the model covariates with missing values 
+
 Changes from Version 0.2 to 0.3 [2014-05-30] Yeunjoo Song <yeunjoo.song@cwru.edu>
 
   * DESCRIPTION:
