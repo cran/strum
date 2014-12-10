@@ -1,5 +1,5 @@
 6eb146cd0734057b8da559f2bb3a4fdc *ChangeLog
-fe404a07ada21bea71ae055f65661353 *DESCRIPTION
+93d0dde0142f1c3ce506f256a15efc94 *DESCRIPTION
 6adcdaceb25c81c1e4bfa8a779957b72 *NAMESPACE
 70d43ba84fc09ec848fd090ada9cee25 *R/00strumVirtualModel.R
 8b4085acb33711b42f0548ea1130ca2f *R/01strumSimModel.R
@@ -49,7 +49,7 @@ a032ee66ac8f2ab05044477cab52ac28 *man/strumVirtualModel-class.Rd
 437206ae8d41244f81bc030c1b219ef3 *src/Makevars
 a0089cc1021ed29c492562045c3dadef *src/Makevars.win
 4f6272758c0ed121f2cf4e8a56a3a933 *src/computeInterval.cpp
-a46dff5eb8dee39f2e0de798889188da *src/computeLLDeriv.cpp
+ecfa96554b9351f182f5a93975aaae26 *src/computeLLDeriv.cpp
 39fcb5351d03640aa53aa04ef95b0c16 *src/computeQ.cpp
 b89e8d6892d344f78d8b8c0ad36ee133 *vignettes/figures/fig_association.png
 0a8b14a4b5d67a8c0edcbd180a5b4f51 *vignettes/figures/fig_linkage.png

@@ -3,8 +3,8 @@
 void process_rk(const NumericVector& yk, const NumericMatrix& xk,
                 const mat& ba, mat& rka, int t)
 {
-  mat yka(yk.begin(), xk.rows(), 1, false);
-  mat xka(xk.begin(), xk.rows(), ba.n_rows, false);
+  mat yka(const_cast<NumericVector&>(yk).begin(), xk.rows(), 1, false);
+  mat xka(const_cast<NumericMatrix&>(xk).begin(), xk.rows(), ba.n_rows, false);
 
   rka = yka - (xka * ba.col(t));
 
