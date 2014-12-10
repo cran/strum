@@ -10,7 +10,7 @@
 \usepackage{array}
 
 \title{Introduction to \textbf{STRU}ctural \textbf{M}odeling of Latent Variables for General Pedigree}
-\author{Yeunjoo E. Song, Nathan J. Morris}
+\author{Yeunjoo E. Song, Catherine M. Stein, Nathan J. Morris}
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}

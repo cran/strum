@@ -8,7 +8,7 @@
 % \VignettePackage{strum}
 
 \title{\textbf{strum} package - examples}
-\author{Yeunjoo E. Song, Nathan J. Morris}
+\author{Yeunjoo E. Song, Catherine M. Stein, Nathan J. Morris}
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}
@@ -82,7 +82,7 @@ myAssoResult = strum(myAssoModel, myAssoData)
 \subsection{Result}
 %--------------------------------------------
 
-The result object contains the model description and two result tables.  The first table contains the fitted parameter values with standard errors, confidence intervals, and p-values.  The second table contains the information on the model fit from four different measures.   For association analysis, you would test $H_0$: $\gamma$ = 0 versus $H_1$: $\gamma \neq$ 0.  In this model, $\gamma$ is the parameter \texttt{L1} $ \sim $ \texttt{aSNP}, which equals to 0.9445929 with the pvalue = 7.955090e-22.
+The result object contains the model description and two result tables.  The first table contains the fitted parameter values with standard errors, confidence intervals, and p-values.  The second table contains the information on the model fit from four different measures.   For association analysis, you would test $H_0$: $\gamma$ = 0 versus $H_1$: $\gamma \neq$ 0.  In this model, $\gamma$ is the parameter \texttt{L1} $ \sim $ \texttt{aSNP}, which equals to 0.9445929 with the pvalue = 1.591018e-21.
 
 <<label=r5, eval=TRUE>>=
 myAssoResult
@@ -153,7 +153,7 @@ myLinkResult = strum(myLinkModel, myLinkData, ibdMarkers=mNames)
 \subsection{Result}
 %--------------------------------------------
 
-The result object again contains the model description and result tables.  The first table contains the fitted parameter values with standard errors, confidence intervals, and p-values.  The second table contains the information on the model fit from four different measures.   For linkage analysis, you would test $H_0$: $\alpha$ = 0 versus $H_1$: $\alpha \neq$ 0.  In this model, $\alpha$ is the parameter \texttt{L1} $ \sim\sim $ \texttt{L1<p>}, which equals to 1.3114935 with the pvalue = 5.973887e-03.
+The result object again contains the model description and result tables.  The first table contains the fitted parameter values with standard errors, confidence intervals, and p-values.  The second table contains the information on the model fit from four different measures.   For linkage analysis, you would test $H_0$: $\alpha$ = 0 versus $H_1$: $\alpha \neq$ 0.  In this model, $\alpha$ is the parameter \texttt{L1} $ \sim\sim $ \texttt{L1<a>}, which equals to 0.2787365 with the pvalue =  2.594076e-01.
 
 <<label=r10, eval=TRUE>>=
 myLinkResult[[1]]

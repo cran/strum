@@ -2,9 +2,11 @@ useDynLib(strum)
 exportPattern("^[[:alpha:]]+")
 
 import(pedigree, methods)
-importFrom(Rgraphviz, agopen, plot, toFile)
+importFrom(Matrix, .bdiag)
 importFrom(MASS, ginv)
 importFrom(Rcpp, evalCpp)
+importFrom(graph, ftM2graphNEL, subGraph)
+importFrom(Rgraphviz, agopen, plot, toFile)
 
 export(
     "createStrumData",

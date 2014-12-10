@@ -95,7 +95,7 @@
 
   .printInfoLine("Fitting model step 1", "Done", 50, 2)
 
-  return(list(K=JF$K, delta=delta, deltaCov=JF$deltaCov, w=JF$w))
+  return(list(K=JF$K, delta=delta, deltaCov=JF$deltaCov, w=JF$w, Wi=De$W))
 }
 
 #------------------------------------------------------------------------------
@@ -146,6 +146,10 @@
 
   z      = theta/standardError
   pValue = pnorm(-abs(z))
+
+  positive = grep("<", paramNames(model))
+  lengthNV = length(paramNames(model)) - length(positive)
+  pValue[1:lengthNV] = pValue[1:lengthNV] * 2.0
 
   dfPar = data.frame(estimate = theta,
                      stdError = standardError,

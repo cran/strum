@@ -1,3 +1,11 @@
+Changes from Version 0.4 to 0.5 [2014-12-10] Yeunjoo Song <yeunjoo.song@cwru.edu>
+
+  * DESCRIPTION:
+    - Changed Version to 0.5
+
+  * R:
+    - Fixed 1-sided test to 2-sided test for the coefficient parameters in fitModel.R 
+
 Changes from Version 0.3 to 0.4 [2014-06-30] Yeunjoo Song <yeunjoo.song@cwru.edu>
 
   * DESCRIPTION:
