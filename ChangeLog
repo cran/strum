@@ -1,3 +1,16 @@
+Changes from Version 0.5 to 0.6 [2015-02-20] Yeunjoo Song <yeunjoo.song@cwru.edu>
+
+  * DESCRIPTION:
+    - Changed Version to 0.6
+
+  * src:
+    - Added more model fit indices in fitModel.R
+
+Changes from Version 0.5 to 0.5.1 [2015-01-30] Yeunjoo Song <yeunjoo.song@cwru.edu>
+
+  * src:
+    - Added const_cast in computeLLDeriv.cpp to comply with Rcpp 0-11-4 Const correct
+
 Changes from Version 0.4 to 0.5 [2014-12-10] Yeunjoo Song <yeunjoo.song@cwru.edu>
 
   * DESCRIPTION:

@@ -37,6 +37,7 @@
   vcpt2 = list()
   vcp12 = list()
 
+  usedN = rep(0, numTrait)
   for( t1 in 1:numTrait )
   {	
     #
@@ -48,6 +49,7 @@
     yt1  = t1dat$y
     xt1  = t1dat$x
     vct1 = t1dat$vc
+    usedN[t1] = usedN[t1] + length(unlist(yt1))
 
     if( length(y$yPro) )
     {
@@ -107,7 +109,7 @@
     }
   }
 
-  return(list(C=betaMat, V=sigmaMat))
+  return(list(C=betaMat, V=sigmaMat, usedN=usedN))
 }
 
 #------------------------------------------------------------------------------

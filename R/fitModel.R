@@ -62,7 +62,7 @@
   if( !is.data.frame(tOut$parEst) )
   {
     fitVal = 4
-  } else if( !is.data.frame(tOut$fitStat) )
+  } else if( !is.data.frame(tOut$fitChi) )
   {
     fitVal = 3
   }
@@ -76,7 +76,8 @@
                        deltaParametersCovMatrix  = s1$deltaCov,
                        parDiff                   = s2$diff,
                        parDiffCovMatrix          = s2$diffCov,
-                       chiTestOut                = tOut$fitStat)
+                       chiTestOut                = tOut$fitChi,
+                       fitIndices                = tOut$fitIndx)
 
   return(myFittedModel)
 }
@@ -95,7 +96,7 @@
 
   .printInfoLine("Fitting model step 1", "Done", 50, 2)
 
-  return(list(K=JF$K, delta=delta, deltaCov=JF$deltaCov, w=JF$w, Wi=De$W))
+  return(list(CV=CV, K=JF$K, delta=delta, deltaCov=JF$deltaCov, w=JF$w, Wi=De$W))
 }
 
 #------------------------------------------------------------------------------
@@ -136,7 +137,8 @@
   if( length(which(thetaVar < 0)) > 0 )
   {
     return(list(parEst  = NA,
-                fitStat = NA))
+                fitChi  = NA,
+                fitIndx = NA))
   }
     
   standardError = sqrt(thetaVar)
@@ -160,77 +162,177 @@
   if( length(s1$delta) == length(theta) )
   {
     return(list(parEst  = dfPar,
-                fitStat = NA))
+                fitChi  = NA,
+                fitIndx = NA))
   }
 
-  # Fit check - Chi-square statistics
-  #-----------------------------------
-  T0       = sum(s2$diff*s2$diff*s1$w) * s1$K
-  df0      = length(s1$delta) - length(theta)
+  # Fit check
+  #-----------
+  N       = s1$K # or max(s1$usedN)
+  dfDelta = length(s1$delta)
+  dfTheta = length(theta)
+  
+  # 1. Naive chi-square statistics of model
+  #-----------------------------------------
+  T1naive  = sum(s2$diff*s2$diff*s1$w) * (N-1)
+  df1      = dfDelta - dfTheta
+
+  # 2. Mean scaled chi-square statistics
+  #--------------------------------------
   dfOrthog = s2$dfOrthog
   gamma    = s1$deltaCov
   Ugamma   = s2$U %*% gamma
   trUgamma = sum(diag(Ugamma))
 
-  # 1. Mean scaled chi-square statistics
-  #--------------------------------------
   temp     = (t(dfOrthog) %*% gamma %*% dfOrthog)
   out      = qr(temp)
   rank     = out$rank
 
   kappa1 = trUgamma / rank
-  T1     = T0 / kappa1
+  T1mean = T1naive / kappa1
 
-  # 2. Mean/variance scaled chi-square statistics
+  # 3. Mean/variance scaled chi-square statistics
   #-----------------------------------------------
-  dstar = trUgamma^2 / sum(diag(Ugamma^2))
-  d2    = round(dstar)
+  dstar      = trUgamma^2 / sum(diag(Ugamma^2))
+  df1meanvar = round(dstar)
 
-  kappa2 = trUgamma / d2
-  T2     = T0 / kappa2
+  kappa2    = trUgamma / df1meanvar
+  T1meanvar = T1naive / kappa2
 
-  pVal0 = pchisq(T0, length(theta), lower.tail = FALSE)
-  pVal1 = pchisq(T1, rank,          lower.tail = FALSE)
-  pVal2 = pchisq(T2, d2,            lower.tail = FALSE)
+  pVal1naive   = pchisq(T1naive,   df1,        lower.tail = FALSE)
+  pVal1mean    = pchisq(T1mean,    rank,       lower.tail = FALSE)
+  pVal1meanvar = pchisq(T1meanvar, df1meanvar, lower.tail = FALSE)
 
   # 3. Corrected chi-square statistics
   #------------------------------------
-  M = s2$diffCov
+  chiCorrect   = .getTheoCorrectT(s2$diffCov, T1naive, df1, s1$w, myeps)
+  pVal1correct = chiCorrect$pVal
+  T1correct    = chiCorrect$Tcorrect
+  
+  # Fit Test Results
+  #------------------
+  dfTest = data.frame(kappa   = c(1,          kappa1,    kappa2,       NA),
+                      chiStat = c(T1naive,    T1mean,    T1meanvar,    T1correct),
+                      df      = c(df1,        rank,      df1meanvar,   df1),
+                      pValue  = c(pVal1naive, pVal1mean, pVal1meanvar, pVal1correct))
+  
+  row.names(dfTest) = c("Un-adjusted", "Mean adjusted", "Mean-Variance adjusted", "Theoretically corrected")
 
+  # Additional Fit Indices
+  #------------------------
+  
+  # 4. Comparative Fit Index (CFI)
+  #--------------------------------
+  chi0  = .getChiNullCorrect(s1, myeps)
+  
+  dNull = chi0$T0correct - chi0$df0
+  dAlt  = T1correct - df1
+  
+  cfi = (dNull-dAlt) / dNull
+
+  if( is.na(cfi) )     cfi = 1.0
+  else if( cfi > 1.0 ) cfi = 1.0
+  else if( cfi < 0.0 ) cfi = 0.0
+ 
+  # 5. Root Mean Square Error Approximation (RMSEA)
+  # - more theoretic work needed since we need to find
+  #   a way to calculate the effective sample size N
+  #-------------------------------------------------
+  #rmsea = sqrt((T1correct-df1)/(df1*effectiveN))
+  
+  fitIndx = data.frame(value = c(cfi))
+  row.names(fitIndx) = c("Comparative Fit Index (CFI)")
+
+  .printInfoLine("Testing model fit", "Done", 50, 2)
+
+  return(list(parEst  = dfPar,
+              fitChi  = dfTest,
+              fitIndx = fitIndx))
+}
+
+#------------------------------------------------------------------------------
+# A function to calculate the theoretically corrected chi-square T
+#  for fit test 
+#------------------------------------------------------------------------------
+.getTheoCorrectT = function(M, Tnaive, dfnaive, w, myeps)
+{
   eM = eigen(M, symmetric=TRUE)
   eM$values[which(abs(eM$values) < myeps)] = 0
   eM$values[which(eM$values < 0)] = 0 
   eM$vectors[which(abs(eM$vectors) < myeps)] = 0
   
   eMsqrt = eM$vectors %*% diag(sqrt(eM$values)) %*% t(eM$vectors)
-
-  B = t(eMsqrt) %*% diag(s1$w) %*% eMsqrt
-
+  
+  B = t(eMsqrt) %*% diag(w) %*% eMsqrt
+  
   eB = eigen(B, symmetric=TRUE)
-
+  
   nEival = length(eB$values)
   nsims  = 10000
-
+  
   simVals = matrix(rchisq(nsims * nEival, df=1), nrow=nsims, ncol=nEival)
   simVals = simVals %*% eB$values
-
-  #pVal3 = mean(simVals < T0)
-  pVal3 = mean(simVals > T0)
-  #if( pVal3 < (50/nsims) )
-  if( pVal3 == 0 )
-    T3 = NA
-  else
-    T3 = qchisq(pVal3, df0, lower.tail = FALSE)
-
-  dfTest = data.frame(kappa   = c(1, kappa1, kappa2, 1),
-                      chiStat = c(T0, T1, T2, T3),
-                      df      = c(df0, rank, d2, df0),
-                      pValue  = c(pVal0, pVal1, pVal2, pVal3))
   
-  row.names(dfTest) = c("Un-adjusted", "Mean adjusted", "Mean-Variance adjusted", "Theoretically corrected")
+  #pVal = mean(simVals < T0)
+  pVal = mean(simVals > Tnaive)
+  #if( pVal < (50/nsims) )
+  if( pVal == 0 )
+    Tcorrect = NA
+  else
+    Tcorrect = qchisq(pVal, dfnaive, lower.tail = FALSE)
+  
+  return(list(Tcorrect=Tcorrect, pVal=pVal))
+}
 
-  .printInfoLine("Testing model fit", "Done", 50, 2)
+#------------------------------------------------------------------------------
+# A function which calculates the vector of partial derivatives of a function
+#  numerically 
+#------------------------------------------------------------------------------
+.getChiNullCorrect = function(s1, myeps)
+{
+  # Find the positon of the parameters in null model
+  # - null model only include intercept and variance
+  C0  = matrix(0, nrow = nrow(s1$CV$C), ncol = ncol(s1$CV$C), byrow = FALSE)
+  C0[1,] = seq(from=1, to=ncol(C0))
+  V0 = list()  	
+  for( j in 1:length(s1$CV$V) )
+  {
+    V0[[j]] = matrix(0, nrow(s1$CV$V[[1]]), ncol(s1$CV$V[[1]]))
+    diag(V0[[j]]) = seq(from=(ncol(C0)*j+1), to=(ncol(C0)*j+ncol(C0)))
+  }
+  
+  delta0pos = .Call("getDelta", t(C0), V0)
+  
+  dFdTheta0 = sapply(delta0pos, function(i) {as.numeric(1:max(delta0pos)==i)})
+  
+  # Calculate covariance matrix of null theta.
+  #--------------------------------------------
+  W = diag(s1$w)
+  WJFJW = W %*% s1$deltaCov %*% W 
+  
+  A = dFdTheta0 %*% W     %*% t(dFdTheta0)
+  B = dFdTheta0 %*% WJFJW %*% t(dFdTheta0)
+  
+  Ai = tryCatch(solve(A), error=function(e) return(ginv(A)))
+  
+  theta0Cov = (Ai %*% B %*% Ai) / s1$K
+  
+  # Calculate covariance matrix of diff=(delta-theta0).
+  #--------------------------------------------------------
+  diff0    = s1$delta - s1$delta*(delta0pos>0)
+  dFAidFW  = t(dFdTheta0) %*% Ai %*% dFdTheta0 %*% W
+  IdFAidFW = diag(nrow(W)) - dFAidFW
+  
+  diff0Cov = (IdFAidFW %*% s1$deltaCov %*% t(IdFAidFW))
 
-  return(list(parEst  = dfPar,
-              fitStat = dfTest))
+  # Naive chi-square statistics of null model
+  #-----------------------------------------
+  T0naive = sum(diff0*diff0*s1$w) * (s1$K-1)
+  df0     = length(s1$delta) - max(delta0pos)
+  
+  # Corrected chi-square statistics of null model
+  #-----------------------------------------
+  chiCorrect = .getTheoCorrectT(diff0Cov, T0naive, df0, s1$w, myeps)
+  
+  return(list(T0correct=chiCorrect$Tcorrect, df0=df0))
 }

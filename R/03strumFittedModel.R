@@ -22,7 +22,8 @@ setClass("strumFittedModel",
            deltaParametersCovMatrix  = "ANY",
            parDiff                   = "ANY",
            parDiffCovMatrix          = "ANY",
-           chiTestOut                = "ANY"),
+           chiTestOut                = "ANY",
+           fitIndices                = "ANY"),
          prototype = list()
 ) 
 
@@ -108,8 +109,11 @@ setMethod("show", signature(object = "strumFittedModel"),
                 cat("\nParameter estimates:\n")
                 print(object@fittedParameters)
 
-                cat("\nChi-square statistics of fit:\n")
+                cat("\nChi-square fit statistics:\n")
                 print(object@chiTestOut)
+
+                cat("\nModel fit indices:\n")
+                print(object@fitIndices)
               }
             }
           }
