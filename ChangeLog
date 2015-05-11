@@ -1,9 +1,18 @@
+Changes from Version 0.6 to 0.6.1 [2015-05-11] Yeunjoo Song <yeunjoo.song@cwru.edu>
+
+  * DESCRIPTION:
+    - Changed Version to 0.6.1
+
+  * R & man:
+    - Fixed a bug on how the missing values were handled with ascertainment option in strum.R
+    - Updated the reference
+
 Changes from Version 0.5 to 0.6 [2015-02-20] Yeunjoo Song <yeunjoo.song@cwru.edu>
 
   * DESCRIPTION:
     - Changed Version to 0.6
 
-  * src:
+  * R:
     - Added more model fit indices in fitModel.R
 
 Changes from Version 0.5 to 0.5.1 [2015-01-30] Yeunjoo Song <yeunjoo.song@cwru.edu>

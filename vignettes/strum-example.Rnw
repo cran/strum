@@ -242,7 +242,11 @@ sessionInfo();
 \bibitem{Morris2010}
 Morris, N.J., Elston, R.C., \& Stein, C.M. (2010).
 \newblock A framework for structural equation models in general pedigrees.
-\newblock \emph{Human heredity}, 70, 278--286.
+\newblock \emph{Human heredity}, 70:278--286.
+\bibitem{Song2015}
+Song, Y.E., Stein, C.M., \& Morris, N.J. (2015).
+\newblock strum: an R package for \emph{stru}ctural \emph{m}odeling of latent variables for general pedigrees.
+\newblock \emph{BMC Genetics}, 16:35.
 
 \end{thebibliography}
 

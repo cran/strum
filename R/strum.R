@@ -48,6 +48,15 @@ strum = function(myStrumModel, myStrumData,
       } else
       {
         aValues = dataVals(myStrumData)[,aName, drop=FALSE]
+        if( any(is.na(aValues)) )
+        {
+          stop(paste("Data contains the missing values(s) in the column '",
+                     aName, "'. ",
+                     "Complete data is required to run a strum model with ",
+                     "ascertainment. Please check your data!",
+                     sep = ""))
+        }
+
         aValues = split(aValues, dataVals(myStrumData)$family)
 
         probands = lapply(aValues, function(pk) return(pk==1))
@@ -305,10 +314,15 @@ strum = function(myStrumModel, myStrumData,
 
   if( length(y$yPro) > 0 )
   {
-    xp  = mapply(.filterMissing,   x$xPro,   missingXY, TRUE,      SIMPLIFY=FALSE)
-    yp  = mapply(.filterMissing,   y$yPro,   missingXY, TRUE,      SIMPLIFY=FALSE)
-    vcp = mapply(.filterMissingVC, vc$vcPro, missingXY, missingXY, SIMPLIFY=FALSE)
-
+    missingXp = lapply(x$xPro, .findMissing, isX=TRUE)
+    missingYp = lapply(y$yPro, function(yk) return(rowSums(is.na(yk))!= ncol(yk)))
+    
+    missingXYp = mapply("&", missingXp, missingYp)
+    
+    xp  = mapply(.filterMissing,   x$xPro,   missingXYp, TRUE,       SIMPLIFY=FALSE)
+    yp  = mapply(.filterMissing,   y$yPro,   missingXYp, TRUE,       SIMPLIFY=FALSE)
+    vcp = mapply(.filterMissingVC, vc$vcPro, missingXYp, missingXYp, SIMPLIFY=FALSE)
+    
     ypn  = yp[ped_names]
     xpn  = xp[ped_names]
     vcpn = vcp[ped_names]
