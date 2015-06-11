@@ -17,8 +17,8 @@ in a future release.
 \tabular{ll}{
 Package: \tab strum\cr
 Type: \tab Package\cr
-Version: \tab 0.6.1\cr
-Date: \tab 2015-05-11\cr
+Version: \tab 0.6.2\cr
+Date: \tab 2015-06-11\cr
 License: \tab GPL (>= 2)\cr
 }
 The following illustrates the typical steps for a strum analysis.
@@ -167,6 +167,6 @@ Maintainer: Nathan Morris <nathan.morris@cwru.edu>, Yeunjoo Song<yeunjoo.song@cw
 Morris, N.J., Elston, R.C., & Stein, C.M. (2010). A framework for structural equation 
 models in general pedigrees. Human Heredity 70:278-286.
 
-Song, Y.E., Stein, C.M., Morris, N.J. (2015). strum: an R package for \emph{stru}ctural \emph{m}odeling of latent variables for general pedigrees. BMC Genetics 16:35.
+Song, Y.E., Stein, C.M., & Morris, N.J. (2015). strum: an R package for \emph{stru}ctural \emph{m}odeling of latent variables for general pedigrees. BMC Genetics 16:35.
 }
 \keyword{ package }

@@ -1,3 +1,11 @@
+Changes from Version 0.6.1 to 0.6.2 [2015-06-11] Yeunjoo Song <yeunjoo.song@cwru.edu>
+
+  * DESCRIPTION:
+    - Changed Version to 0.6.2
+
+  * R & man:
+    - Fixed a bug on the missing value handling in strum.R
+
 Changes from Version 0.6 to 0.6.1 [2015-05-11] Yeunjoo Song <yeunjoo.song@cwru.edu>
 
   * DESCRIPTION:

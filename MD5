@@ -1,5 +1,5 @@
-526ce07cf1fd524486d5a3d50953c88a *ChangeLog
-35c25523f803a94a29ce5d72a7920639 *DESCRIPTION
+fb8ed4ce3005cc61d9817895ff6f637b *ChangeLog
+d40e1185e97e7988d1a9389075872be4 *DESCRIPTION
 6adcdaceb25c81c1e4bfa8a779957b72 *NAMESPACE
 70d43ba84fc09ec848fd090ada9cee25 *R/00strumVirtualModel.R
 8b4085acb33711b42f0548ea1130ca2f *R/01strumSimModel.R
@@ -17,15 +17,15 @@ df39dd9cdf51c1956536ed917b826445 *R/createMarker.R
 7557d703bf530c0844286cc81ffb9573 *R/fitModel.R
 4fabd78a53dc92de5ff1845a5ef4b896 *R/generateStartValue.R
 a9f8205327d34acbd63ae62965f966b9 *R/simulateData.R
-1399892eede4a0000d3430b12d41f11b *R/strum.R
+1492a0a4f9cec2ff144ed62650172a3a *R/strum.R
 7f5108c3df80f5da172179b724a42735 *R/utils.R
-d4f57050530d8b3474dddb0852596c4a *build/vignette.rds
+cebabbc279824eeacdbe5dac0390e296 *build/vignette.rds
 8c739827532bd6c36a41055d4e8b4945 *inst/doc/strum-example.R
 576bd83f5c5f8a49abaef2de12a05b70 *inst/doc/strum-example.Rnw
-e5fd7abb36638d338b19b581577785f2 *inst/doc/strum-example.pdf
+eb8a32c8b30863e4b3b2acd084de89dc *inst/doc/strum-example.pdf
 724ccdcb09a383071d91159da269808c *inst/doc/strum-intro.R
 4bd92481911d7faecd46eb159756647f *inst/doc/strum-intro.Rnw
-de9991a62fcca655c77b4ba79ed81516 *inst/doc/strum-intro.pdf
+1effa748a0333ab42fd0fe37d2f45b74 *inst/doc/strum-intro.pdf
 2b8f45c338357481992f17b0363c7342 *inst/extdata/GENIBD.chr1Ped.ibd
 a319bd1f41872eb5aabf3fe549a6c484 *inst/extdata/example_ped.csv
 fd37a178dee9e8c9cc10a7b21e9dbe67 *inst/extdata/example_raw.csv
@@ -37,7 +37,7 @@ d4625c8d33d1c9492f3542736ed1a3bf *inst/extdata/hap20snp10.Rdata
 05cdc4f3989aa55f4bdd07cda234ce27 *man/createStrumModel.Rd
 595c3c072407cd97f7fbd60884ede0de *man/importHapmapData.Rd
 917c0dbc668aa50d72e17fb8f13ee27a *man/simulateStrumData.Rd
-147c3a9a2c94a813e3d4c0506d80fa58 *man/strum-package.Rd
+71c51122221b56955dffd81e2dbbe7f4 *man/strum-package.Rd
 8a00a6aa60417862ee1614d787fde643 *man/strum.Rd
 8df0d2ab078f3921b02e4fc8f6625e91 *man/strumData-class.Rd
 b7a48357b8fda39e199bb157f603bad5 *man/strumFittedModel-class.Rd

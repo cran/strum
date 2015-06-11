@@ -297,7 +297,7 @@ strum = function(myStrumModel, myStrumData,
   missingX = lapply(x$xAll, .findMissing, isX=TRUE)
   missingY = lapply(y$yAll, function(yk) return(rowSums(is.na(yk))!= ncol(yk)))
 
-  missingXY = mapply("&", missingX, missingY)
+  missingXY = mapply("&", missingX, missingY, SIMPLIFY=FALSE)
 
   xa  = mapply(.filterMissing,   x$xAll,   missingXY, TRUE,      SIMPLIFY=FALSE)
   ya  = mapply(.filterMissing,   y$yAll,   missingXY, TRUE,      SIMPLIFY=FALSE)
@@ -317,7 +317,7 @@ strum = function(myStrumModel, myStrumData,
     missingXp = lapply(x$xPro, .findMissing, isX=TRUE)
     missingYp = lapply(y$yPro, function(yk) return(rowSums(is.na(yk))!= ncol(yk)))
     
-    missingXYp = mapply("&", missingXp, missingYp)
+    missingXYp = mapply("&", missingXp, missingYp, SIMPLIFY=FALSE)
     
     xp  = mapply(.filterMissing,   x$xPro,   missingXYp, TRUE,       SIMPLIFY=FALSE)
     yp  = mapply(.filterMissing,   y$yPro,   missingXYp, TRUE,       SIMPLIFY=FALSE)
